@@ -1,60 +1,76 @@
 {
-    "geode": "4.0.0-beta.1",
+    "geode": "4.2.0",
     "gd": {
         "win": "2.2074",
         "mac": "2.2074",
         "android": "2.2074"
     },
-    "version": "v1.0.12",
+    "version": "v1.1.0",
     "id": "hiimjustin000.more_object_info",
     "name": "More Object Info",
-    "developer": "hiimjustin000",
-    "description": "A mod that adds more object info to the level editor.",
+    "developer": "hiimjasmine00",
+    "description": "A mod that improves editor object info.",
     "settings": {
+        "general": {
+            "name": "General",
+            "description": "General settings for the mod.",
+            "type": "title"
+        },
+        "dynamic-object-info": {
+            "name": "Dynamic Object Info",
+            "description": "Update the object info text in real-time.",
+            "type": "bool",
+            "default": true
+        },
+        "object-properties": {
+            "name": "Object Properties",
+            "description": "Settings for showing object properties in the object info text.",
+            "type": "title"
+        },
         "show-object-id": {
-            "name": "Show Object ID",
+            "name": "ID",
             "description": "Show the object's ID in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-position": {
-            "name": "Show Object Position",
+            "name": "Position",
             "description": "Show the object's position in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-rotation": {
-            "name": "Show Object Rotation",
+            "name": "Rotation",
             "description": "Show the object's rotation in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-scale": {
-            "name": "Show Object Scale",
+            "name": "Scale",
             "description": "Show the object's scale in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-base-color": {
-            "name": "Show Object Base Color",
+            "name": "Base Color HSV",
             "description": "Show the object's base color in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-detail-color": {
-            "name": "Show Object Detail Color",
+            "name": "Detail Color HSV",
             "description": "Show the object's detail color in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-type": {
-            "name": "Show Object Type",
+            "name": "Type",
             "description": "Show the object's type in the object info text.",
             "type": "bool",
             "default": true
         },
         "show-object-address": {
-            "name": "Show Object Address",
+            "name": "Address",
             "description": "Show the object's address in the object info text.",
             "type": "bool",
             "default": false
@@ -62,7 +78,7 @@
     },
     "links": {
         "community": "https://discord.gg/QVKmbvBXA7",
-        "source": "https://github.com/hiimjustin000/MoreObjectInfo",
+        "source": "https://github.com/hiimjasmine00/MoreObjectInfo",
         "homepage": "https://www.hiimjustin000.com"
     },
     "tags": [

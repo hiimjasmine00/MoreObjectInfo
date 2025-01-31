@@ -1,8 +1,9 @@
 # More Object Info
-A mod that adds more object info to the level editor.
+A mod that improves editor object info.
 
 # Features
-- Extra object properties in the object info selection text, which can be enabled or disabled in the mod's settings
+- Object info text that changes dynamically when the object is moved, rotated, scaled, or transformed
+- Extra object properties in the object info text, which can be enabled or disabled in the mod's settings
 
 # List of Properties
 - Object ID

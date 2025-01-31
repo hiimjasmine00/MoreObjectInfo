@@ -1,4 +1,8 @@
 # More Object Info Changelog
+## v1.1.0 (2025-01-31)
+- Added Dynamic Object Info
+- Fixed incompatibility with the mod "Geode In Pause Menu" by me
+
 ## v1.0.12 (2024-11-15)
 - Ported to Geode v4.0.0-beta.1
 
@@ -26,7 +30,7 @@
 - Ported to Geometry Dash v2.206
 
 ## v1.0.6 (2024-05-19)
-- Added Object Type      
+- Added Object Type
 - Tweaked display of scale and rotation values
 
 ## v1.0.5 (2024-05-06)
