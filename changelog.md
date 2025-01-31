@@ -1,7 +1,8 @@
 # More Object Info Changelog
 ## v1.1.0 (2025-01-31)
 - Added Dynamic Object Info
-- Fixed incompatibility with the mod "Geode In Pause Menu" by me
+- Added hook disabling
+- Fixed settings not updating inside the editor
 
 ## v1.0.12 (2024-11-15)
 - Ported to Geode v4.0.0-beta.1

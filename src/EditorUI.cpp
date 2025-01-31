@@ -1,16 +1,14 @@
+#include "MoreObjectInfo.hpp"
 #include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
 #include <Geode/modify/EditorUI.hpp>
-#include <Geode/modify/GJRotationControl.hpp>
-#include <Geode/modify/GJScaleControl.hpp>
-#include <Geode/modify/GJTransformControl.hpp>
 
 using namespace geode::prelude;
+using namespace std::string_view_literals;
 
 class $modify(MOIEditorUI, EditorUI) {
     struct Fields {
-        bool m_dynamicObjectInfo;
         bool m_showObjectID;
         bool m_showObjectPosition;
         bool m_showObjectRotation;
@@ -20,6 +18,34 @@ class $modify(MOIEditorUI, EditorUI) {
         bool m_showObjectType;
         bool m_showObjectAddress;
     };
+
+    static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
+        MoreObjectInfo::addHookListener(self, "EditorUI::moveObjectCall", "dynamic-object-info"sv);
+        MoreObjectInfo::addHookListener(self, "EditorUI::transformObjectCall", "dynamic-object-info"sv);
+        MoreObjectInfo::addHookListener(self, "EditorUI::updateObjectInfoLabel",
+            "show-object-id"sv, "show-object-position"sv, "show-object-rotation"sv, "show-object-scale"sv,
+            "show-object-base-color"sv, "show-object-detail-color"sv, "show-object-type"sv, "show-object-address"sv);
+
+        listenForAllSettingChanges([](std::shared_ptr<SettingV3> setting) {
+            if (auto editorUI = static_cast<MOIEditorUI*>(EditorUI::get())) {
+                auto settingName = setting->getKey();
+                if (settingName.starts_with("show-object-")) {
+                    auto propertyName = settingName.substr(12);
+                    auto settingValue = std::static_pointer_cast<BoolSettingV3>(setting)->getValue();
+                    auto f = editorUI->m_fields.self();
+                    if (propertyName == "id") f->m_showObjectID = settingValue;
+                    else if (propertyName == "position") f->m_showObjectPosition = settingValue;
+                    else if (propertyName == "rotation") f->m_showObjectRotation = settingValue;
+                    else if (propertyName == "scale") f->m_showObjectScale = settingValue;
+                    else if (propertyName == "base-color") f->m_showObjectBaseColor = settingValue;
+                    else if (propertyName == "detail-color") f->m_showObjectDetailColor = settingValue;
+                    else if (propertyName == "type") f->m_showObjectType = settingValue;
+                    else if (propertyName == "address") f->m_showObjectAddress = settingValue;
+                }
+                editorUI->EditorUI::updateObjectInfoLabel();
+            }
+        });
+    }
 
     bool init(LevelEditorLayer* editorLayer) {
         if (!EditorUI::init(editorLayer)) return false;
@@ -149,43 +175,3 @@ class $modify(MOIEditorUI, EditorUI) {
         m_objectInfoLabel->setString(info.c_str());
     }
 };
-
-class $modify(MOIRotationControl, GJRotationControl) {
-    void ccTouchEnded(CCTouch* touch, CCEvent* event) {
-        GJRotationControl::ccTouchEnded(touch, event);
-        if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel();
-    }
-};
-
-class $modify(MOIScaleControl, GJScaleControl) {
-    void ccTouchEnded(CCTouch* touch, CCEvent* event) {
-        GJScaleControl::ccTouchEnded(touch, event);
-        if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel();
-    }
-};
-
-class $modify(MOITransformControl, GJTransformControl) {
-    void ccTouchEnded(CCTouch* touch, CCEvent* event) {
-        GJTransformControl::ccTouchEnded(touch, event);
-        if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel();
-    }
-};
-
-#define SETTING_LISTENER(settingName, memberName) listenForSettingChanges(settingName, [](decltype(MOIEditorUI::Fields::memberName) value) { \
-    if (auto editorUI = static_cast<MOIEditorUI*>(EditorUI::get())) { \
-        editorUI->m_fields->memberName = value; \
-        editorUI->EditorUI::updateObjectInfoLabel(); \
-    } \
-});
-
-$on_mod(Loaded) {
-    SETTING_LISTENER("dynamic-object-info", m_dynamicObjectInfo);
-    SETTING_LISTENER("show-object-id", m_showObjectID);
-    SETTING_LISTENER("show-object-position", m_showObjectPosition);
-    SETTING_LISTENER("show-object-rotation", m_showObjectRotation);
-    SETTING_LISTENER("show-object-scale", m_showObjectScale);
-    SETTING_LISTENER("show-object-base-color", m_showObjectBaseColor);
-    SETTING_LISTENER("show-object-detail-color", m_showObjectDetailColor);
-    SETTING_LISTENER("show-object-type", m_showObjectType);
-    SETTING_LISTENER("show-object-address", m_showObjectAddress);
-}

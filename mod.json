@@ -18,7 +18,7 @@
         },
         "dynamic-object-info": {
             "name": "Dynamic Object Info",
-            "description": "Update the object info text in real-time.",
+            "description": "Whether to update the object info text in real-time.",
             "type": "bool",
             "default": true
         },
@@ -29,49 +29,49 @@
         },
         "show-object-id": {
             "name": "ID",
-            "description": "Show the object's ID in the object info text.",
+            "description": "Whether to show the object's ID.",
             "type": "bool",
             "default": true
         },
         "show-object-position": {
             "name": "Position",
-            "description": "Show the object's position in the object info text.",
+            "description": "Whether to show the object's position.",
             "type": "bool",
             "default": true
         },
         "show-object-rotation": {
             "name": "Rotation",
-            "description": "Show the object's rotation in the object info text.",
+            "description": "Whether to show the object's rotation.",
             "type": "bool",
             "default": true
         },
         "show-object-scale": {
             "name": "Scale",
-            "description": "Show the object's scale in the object info text.",
+            "description": "Whether to show the object's scale.",
             "type": "bool",
             "default": true
         },
         "show-object-base-color": {
             "name": "Base Color HSV",
-            "description": "Show the object's base color in the object info text.",
+            "description": "Whether to show the object's base color HSV.",
             "type": "bool",
             "default": true
         },
         "show-object-detail-color": {
             "name": "Detail Color HSV",
-            "description": "Show the object's detail color in the object info text.",
+            "description": "Whether to show the object's detail color HSV.",
             "type": "bool",
             "default": true
         },
         "show-object-type": {
             "name": "Type",
-            "description": "Show the object's type in the object info text.",
+            "description": "Whether to show the object's type.",
             "type": "bool",
             "default": true
         },
         "show-object-address": {
             "name": "Address",
-            "description": "Show the object's address in the object info text.",
+            "description": "Whether to show the object's address.",
             "type": "bool",
             "default": false
         }
