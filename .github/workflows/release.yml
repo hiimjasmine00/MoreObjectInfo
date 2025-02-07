@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url: ${{ steps.release.outputs.url }}
+      url: ${{ steps.mod-release.outputs.url }}
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: hiimjasmine00/release-geode-mod@main
-        id: release
+        id: mod-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -25,12 +25,12 @@ jobs:
     needs: ['release']
     environment:
       name: publish
-      url: ${{ steps.publish.outputs.url }}
+      url: ${{ steps.mod-publish.outputs.url }}
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: hiimjasmine00/release-geode-mod/publish@main
-        id: publish
+        id: mod-publish
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

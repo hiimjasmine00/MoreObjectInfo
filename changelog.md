@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.1 (2025-02-07)
+- Added object info update on intermediate transformation to Dynamic Object Info
+
 ## v1.1.0 (2025-01-31)
 - Added Dynamic Object Info
 - Added hook disabling

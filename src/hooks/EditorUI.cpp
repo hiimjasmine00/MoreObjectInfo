@@ -1,11 +1,9 @@
-#include "MoreObjectInfo.hpp"
 #include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
 #include <Geode/modify/EditorUI.hpp>
 
 using namespace geode::prelude;
-using namespace std::string_view_literals;
 
 class $modify(MOIEditorUI, EditorUI) {
     struct Fields {
@@ -20,16 +18,23 @@ class $modify(MOIEditorUI, EditorUI) {
     };
 
     static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
-        MoreObjectInfo::addHookListener(self, "EditorUI::moveObjectCall", "dynamic-object-info"sv);
-        MoreObjectInfo::addHookListener(self, "EditorUI::transformObjectCall", "dynamic-object-info"sv);
-        MoreObjectInfo::addHookListener(self, "EditorUI::updateObjectInfoLabel",
-            "show-object-id"sv, "show-object-position"sv, "show-object-rotation"sv, "show-object-scale"sv,
-            "show-object-base-color"sv, "show-object-detail-color"sv, "show-object-type"sv, "show-object-address"sv);
+        auto moveHookRes = self.getHook("EditorUI::moveObjectCall");
+        if (moveHookRes.isErr()) log::error("Failed to get EditorUI::moveObjectCall hook: {}", moveHookRes.unwrapErr());
 
-        listenForAllSettingChanges([](std::shared_ptr<SettingV3> setting) {
-            if (auto editorUI = static_cast<MOIEditorUI*>(EditorUI::get())) {
-                auto settingName = setting->getKey();
-                if (settingName.starts_with("show-object-")) {
+        auto transformHookRes = self.getHook("EditorUI::transformObjectCall");
+        if (transformHookRes.isErr()) log::error("Failed to get EditorUI::transformObjectCall hook: {}", transformHookRes.unwrapErr());
+
+        auto updateHookRes = self.getHook("EditorUI::updateObjectInfoLabel");
+        if (updateHookRes.isErr()) log::error("Failed to get EditorUI::updateObjectInfoLabel hook: {}", updateHookRes.unwrapErr());
+
+        auto moveHook = moveHookRes.unwrapOr(nullptr);
+        auto transformHook = transformHookRes.unwrapOr(nullptr);
+        auto updateHook = updateHookRes.unwrapOr(nullptr);
+
+        listenForAllSettingChanges([moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
+            auto settingName = setting->getKey();
+            if (settingName.starts_with("show-object-")) {
+                if (auto editorUI = static_cast<MOIEditorUI*>(EditorUI::get())) {
                     auto propertyName = settingName.substr(12);
                     auto settingValue = std::static_pointer_cast<BoolSettingV3>(setting)->getValue();
                     auto f = editorUI->m_fields.self();
@@ -41,8 +46,33 @@ class $modify(MOIEditorUI, EditorUI) {
                     else if (propertyName == "detail-color") f->m_showObjectDetailColor = settingValue;
                     else if (propertyName == "type") f->m_showObjectType = settingValue;
                     else if (propertyName == "address") f->m_showObjectAddress = settingValue;
+
+                    editorUI->EditorUI::updateObjectInfoLabel();
                 }
-                editorUI->EditorUI::updateObjectInfoLabel();
+
+                auto mod = Mod::get();
+                auto value = mod->getSettingValue<bool>("show-object-id") || mod->getSettingValue<bool>("show-object-position") ||
+                    mod->getSettingValue<bool>("show-object-rotation") || mod->getSettingValue<bool>("show-object-scale") ||
+                    mod->getSettingValue<bool>("show-object-base-color") || mod->getSettingValue<bool>("show-object-detail-color") ||
+                    mod->getSettingValue<bool>("show-object-type") || mod->getSettingValue<bool>("show-object-address");
+                if (updateHook) {
+                    auto updateChangeRes = value ? updateHook->enable() : updateHook->disable();
+                    if (updateChangeRes.isErr()) log::error("Failed to {} EditorUI::updateObjectInfoLabel hook: {}",
+                        value ? "enable" : "disable", updateChangeRes.unwrapErr());
+                }
+            }
+            else if (settingName == "dynamic-object-info") {
+                auto value = std::static_pointer_cast<BoolSettingV3>(setting)->getValue();
+                if (moveHook) {
+                    auto moveChangeRes = value ? moveHook->enable() : moveHook->disable();
+                    if (moveChangeRes.isErr()) log::error("Failed to {} EditorUI::moveObjectCall hook: {}",
+                        value ? "enable" : "disable", moveChangeRes.unwrapErr());
+                }
+                if (transformHook) {
+                    auto transformChangeRes = value ? transformHook->enable() : transformHook->disable();
+                    if (transformChangeRes.isErr()) log::error("Failed to {} EditorUI::transformObjectCall hook: {}",
+                        value ? "enable" : "disable", transformChangeRes.unwrapErr());
+                }
             }
         });
     }
@@ -83,37 +113,40 @@ class $modify(MOIEditorUI, EditorUI) {
         auto f = m_fields.self();
         auto selectedObject = m_selectedObject;
 
-        if (f->m_showObjectID) info += fmt::format("ID: {}\n", selectedObject->m_objectID);
+        auto objID = f->m_showObjectID ? fmt::format("ID: {}\n", selectedObject->m_objectID) : "";
 
-        if (f->m_showObjectPosition) info += fmt::format("Position: {}, {}\n", selectedObject->getPositionX(), selectedObject->getPositionY() - 90.0f);
+        auto objPosition = f->m_showObjectPosition ? fmt::format("Position: {}, {}\n", selectedObject->getPositionX(), selectedObject->getPositionY() - 90.0f) : "";
 
         auto rotationX = selectedObject->getRotationX();
         auto rotationY = selectedObject->getRotationY();
-        if (f->m_showObjectRotation && (rotationX != 0.0f || rotationY != 0.0f))
-            info += fmt::format("Rotation: {}{}\n", rotationX, rotationX != rotationY ? fmt::format(", {}", rotationY) : "");
+        auto objRotation = f->m_showObjectRotation && (rotationX != 0.0f || rotationY != 0.0f) ? 
+            fmt::format("Rotation: {}{}\n", rotationX, rotationX != rotationY ? fmt::format(", {}", rotationY) : "") : "";
 
         auto scaleX = selectedObject->getScaleX();
         auto scaleY = selectedObject->getScaleY();
-        if (f->m_showObjectScale && (scaleX != 1.0f || scaleY != 1.0f))
-            info += fmt::format("Scale: {}{}\n", scaleX, scaleX != scaleY ? fmt::format(", {}", scaleY) : "");
+        auto objScale = f->m_showObjectScale && (scaleX != 1.0f || scaleY != 1.0f) ?
+            fmt::format("Scale: {}{}\n", scaleX, scaleX != scaleY ? fmt::format(", {}", scaleY) : "") : "";
 
+        std::string objBaseColor;
+        std::string objDetailColor;
         auto baseColor = selectedObject->m_baseColor;
         auto detailColor = selectedObject->m_detailColor;
         if (f->m_showObjectBaseColor && baseColor) {
-            auto hsv = baseColor->m_hsv;
+            auto& hsv = baseColor->m_hsv;
             if (hsv.h != 0.0f || hsv.s != 1.0f || hsv.v != 1.0f || hsv.absoluteSaturation || hsv.absoluteBrightness)
-                info += fmt::format("{}HSV: {}, {}{}, {}{}\n", detailColor ? "Base " : "", hsv.h,
+                objBaseColor = fmt::format("{}HSV: {}, {}{}, {}{}\n", detailColor ? "Base " : "", hsv.h,
                     hsv.absoluteSaturation && hsv.s >= 0 ? "+" : "x", hsv.s,
                     hsv.absoluteBrightness && hsv.v >= 0 ? "+" : "x", hsv.v);
         }
         if (f->m_showObjectDetailColor && detailColor) {
-            auto hsv = detailColor->m_hsv;
+            auto& hsv = detailColor->m_hsv;
             if (hsv.h != 0.0f || hsv.s != 1.0f || hsv.v != 1.0f || hsv.absoluteSaturation || hsv.absoluteBrightness)
-                info += fmt::format("{}HSV: {}, {}{}, {}{}\n", baseColor ? "Detail " : "", hsv.h,
+                objDetailColor = fmt::format("{}HSV: {}, {}{}, {}{}\n", baseColor ? "Detail " : "", hsv.h,
                     hsv.absoluteSaturation && hsv.s >= 0 ? "+" : "x", hsv.s,
                     hsv.absoluteBrightness && hsv.v >= 0 ? "+" : "x", hsv.v);
         }
 
+        std::string objType;
         if (f->m_showObjectType) {
             auto objectType = selectedObject->m_objectType;
             auto typeStr = "";
@@ -167,11 +200,12 @@ class $modify(MOIEditorUI, EditorUI) {
                 case GameObjectType::AnimatedHazard: typeStr = "Animated Hazard"; break;
                 default: typeStr = "Unknown"; break;
             }
-            info += fmt::format("Type: {} ({})\n", typeStr, (int)objectType);
+            objType = fmt::format("Type: {} ({})\n", typeStr, (int)objectType);
         }
 
-        if (f->m_showObjectAddress) info += fmt::format("Address: 0x{:x}\n", reinterpret_cast<uintptr_t>(selectedObject));
+        auto objAddress = f->m_showObjectAddress ? fmt::format("Address: 0x{:x}\n", reinterpret_cast<uintptr_t>(selectedObject)) : "";
 
-        m_objectInfoLabel->setString(info.c_str());
+        m_objectInfoLabel->setString(fmt::format("{}{}{}{}{}{}{}{}{}", m_objectInfoLabel->getString(),
+            objID, objPosition, objRotation, objScale, objBaseColor, objDetailColor, objType, objAddress).c_str());
     }
 };
