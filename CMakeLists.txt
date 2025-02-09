@@ -5,13 +5,14 @@ set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(GEODE_DISABLE_PRECOMPILED_HEADERS ON)
 
-project(MoreObjectInfo VERSION 1.1.1)
+project(MoreObjectInfo VERSION 1.1.2)
 
 add_library(${PROJECT_NAME} SHARED
     src/hooks/EditorUI.cpp
     src/hooks/GJRotationControl.cpp
     src/hooks/GJScaleControl.cpp
     src/hooks/GJTransformControl.cpp
+    src/MoreObjectInfo.cpp
 )
 
 if (NOT DEFINED ENV{GEODE_SDK})

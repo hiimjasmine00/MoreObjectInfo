@@ -1,3 +1,4 @@
+#include "../MoreObjectInfo.hpp"
 #include <Geode/binding/EditorUI.hpp>
 #include <Geode/modify/GJScaleControl.hpp>
 
@@ -12,21 +13,18 @@ class $modify(MOIScaleControl, GJScaleControl) {
         if (moveHookRes.isErr()) log::error("Failed to get GJScaleControl::ccTouchMoved hook: {}", moveHookRes.unwrapErr());
 
         auto endHook = endHookRes.unwrapOr(nullptr);
+        if (endHook) endHook->setAutoEnable(MoreObjectInfo::dynamicObjectInfo());
         auto moveHook = moveHookRes.unwrapOr(nullptr);
-        auto value = Mod::get()->getSettingValue<bool>("dynamic-object-info");
-        if (endHook) endHook->setAutoEnable(value);
-        if (moveHook) moveHook->setAutoEnable(value);
+        if (moveHook) moveHook->setAutoEnable(MoreObjectInfo::dynamicObjectInfo());
 
-        listenForSettingChanges("dynamic-object-info", [endHook, moveHook](bool value) {
+        listenForSettingChanges<bool>("dynamic-object-info", [endHook, moveHook](bool value) {
             if (endHook) {
-                auto endChangeRes = value ? endHook->enable() : endHook->disable();
-                if (endChangeRes.isErr()) log::error("Failed to {} GJScaleControl::ccTouchEnded hook: {}",
-                    value ? "enable" : "disable", endChangeRes.unwrapErr());
+                auto changeRes = value ? endHook->enable() : endHook->disable();
+                if (changeRes.isErr()) log::error("Failed to {} GJScaleControl::ccTouchEnded hook: {}", value ? "enable" : "disable", changeRes.unwrapErr());
             }
             if (moveHook) {
-                auto moveChangeRes = value ? moveHook->enable() : moveHook->disable();
-                if (moveChangeRes.isErr()) log::error("Failed to {} GJScaleControl::ccTouchMoved hook: {}",
-                    value ? "enable" : "disable", moveChangeRes.unwrapErr());
+                auto changeRes = value ? moveHook->enable() : moveHook->disable();
+                if (changeRes.isErr()) log::error("Failed to {} GJScaleControl::ccTouchMoved hook: {}", value ? "enable" : "disable", changeRes.unwrapErr());
             }
         });
     }

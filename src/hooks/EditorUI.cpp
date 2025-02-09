@@ -1,3 +1,4 @@
+#include "../MoreObjectInfo.hpp"
 #include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
@@ -28,8 +29,11 @@ class $modify(MOIEditorUI, EditorUI) {
         if (updateHookRes.isErr()) log::error("Failed to get EditorUI::updateObjectInfoLabel hook: {}", updateHookRes.unwrapErr());
 
         auto moveHook = moveHookRes.unwrapOr(nullptr);
+        if (moveHook) moveHook->setAutoEnable(MoreObjectInfo::dynamicObjectInfo());
         auto transformHook = transformHookRes.unwrapOr(nullptr);
+        if (transformHook) transformHook->setAutoEnable(MoreObjectInfo::dynamicObjectInfo());
         auto updateHook = updateHookRes.unwrapOr(nullptr);
+        if (updateHook) updateHook->setAutoEnable(MoreObjectInfo::showObjectInfo());
 
         listenForAllSettingChanges([moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
             auto settingName = setting->getKey();
@@ -50,28 +54,21 @@ class $modify(MOIEditorUI, EditorUI) {
                     editorUI->EditorUI::updateObjectInfoLabel();
                 }
 
-                auto mod = Mod::get();
-                auto value = mod->getSettingValue<bool>("show-object-id") || mod->getSettingValue<bool>("show-object-position") ||
-                    mod->getSettingValue<bool>("show-object-rotation") || mod->getSettingValue<bool>("show-object-scale") ||
-                    mod->getSettingValue<bool>("show-object-base-color") || mod->getSettingValue<bool>("show-object-detail-color") ||
-                    mod->getSettingValue<bool>("show-object-type") || mod->getSettingValue<bool>("show-object-address");
+                auto value = MoreObjectInfo::showObjectInfo(setting->getMod());
                 if (updateHook) {
-                    auto updateChangeRes = value ? updateHook->enable() : updateHook->disable();
-                    if (updateChangeRes.isErr()) log::error("Failed to {} EditorUI::updateObjectInfoLabel hook: {}",
-                        value ? "enable" : "disable", updateChangeRes.unwrapErr());
+                    auto changeRes = value ? updateHook->enable() : updateHook->disable();
+                    if (changeRes.isErr()) log::error("Failed to {} EditorUI::updateObjectInfoLabel hook: {}", value ? "enable" : "disable", changeRes.unwrapErr());
                 }
             }
             else if (settingName == "dynamic-object-info") {
                 auto value = std::static_pointer_cast<BoolSettingV3>(setting)->getValue();
                 if (moveHook) {
-                    auto moveChangeRes = value ? moveHook->enable() : moveHook->disable();
-                    if (moveChangeRes.isErr()) log::error("Failed to {} EditorUI::moveObjectCall hook: {}",
-                        value ? "enable" : "disable", moveChangeRes.unwrapErr());
+                    auto changeRes = value ? moveHook->enable() : moveHook->disable();
+                    if (changeRes.isErr()) log::error("Failed to {} EditorUI::moveObjectCall hook: {}", value ? "enable" : "disable", changeRes.unwrapErr());
                 }
                 if (transformHook) {
-                    auto transformChangeRes = value ? transformHook->enable() : transformHook->disable();
-                    if (transformChangeRes.isErr()) log::error("Failed to {} EditorUI::transformObjectCall hook: {}",
-                        value ? "enable" : "disable", transformChangeRes.unwrapErr());
+                    auto changeRes = value ? transformHook->enable() : transformHook->disable();
+                    if (changeRes.isErr()) log::error("Failed to {} EditorUI::transformObjectCall hook: {}", value ? "enable" : "disable", changeRes.unwrapErr());
                 }
             }
         });
