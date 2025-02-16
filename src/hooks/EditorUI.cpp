@@ -2,6 +2,7 @@
 #include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
+#include <Geode/binding/LevelEditorLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
 
 using namespace geode::prelude;
@@ -16,6 +17,7 @@ class $modify(MOIEditorUI, EditorUI) {
         bool m_showObjectDetailColor;
         bool m_showObjectType;
         bool m_showObjectAddress;
+        bool m_showObjectData;
     };
 
     static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
@@ -50,6 +52,7 @@ class $modify(MOIEditorUI, EditorUI) {
                     else if (propertyName == "detail-color") f->m_showObjectDetailColor = settingValue;
                     else if (propertyName == "type") f->m_showObjectType = settingValue;
                     else if (propertyName == "address") f->m_showObjectAddress = settingValue;
+                    else if (propertyName == "data") f->m_showObjectData = settingValue;
 
                     editorUI->EditorUI::updateObjectInfoLabel();
                 }
@@ -87,6 +90,7 @@ class $modify(MOIEditorUI, EditorUI) {
         f->m_showObjectDetailColor = mod->getSettingValue<bool>("show-object-detail-color");
         f->m_showObjectType = mod->getSettingValue<bool>("show-object-type");
         f->m_showObjectAddress = mod->getSettingValue<bool>("show-object-address");
+        f->m_showObjectData = mod->getSettingValue<bool>("show-object-data");
 
         return true;
     }
@@ -116,13 +120,13 @@ class $modify(MOIEditorUI, EditorUI) {
 
         auto rotationX = selectedObject->getRotationX();
         auto rotationY = selectedObject->getRotationY();
-        auto objRotation = f->m_showObjectRotation && (rotationX != 0.0f || rotationY != 0.0f) ? 
-            fmt::format("Rotation: {}{}\n", rotationX, rotationX != rotationY ? fmt::format(", {}", rotationY) : "") : "";
+        auto objRotation = f->m_showObjectRotation && (rotationX != 0.0f || rotationY != 0.0f) ?
+            rotationX != rotationY ? fmt::format("Rotation: {}, {}\n", rotationX, rotationY) : fmt::format("Rotation: {}\n", rotationX) : "";
 
         auto scaleX = selectedObject->getScaleX();
         auto scaleY = selectedObject->getScaleY();
         auto objScale = f->m_showObjectScale && (scaleX != 1.0f || scaleY != 1.0f) ?
-            fmt::format("Scale: {}{}\n", scaleX, scaleX != scaleY ? fmt::format(", {}", scaleY) : "") : "";
+            scaleX != scaleY ? fmt::format("Scale: {}, {}\n", scaleX, scaleY) : fmt::format("Scale: {}\n", scaleX) : "";
 
         std::string objBaseColor;
         std::string objDetailColor;
@@ -202,7 +206,9 @@ class $modify(MOIEditorUI, EditorUI) {
 
         auto objAddress = f->m_showObjectAddress ? fmt::format("Address: 0x{:x}\n", reinterpret_cast<uintptr_t>(selectedObject)) : "";
 
-        m_objectInfoLabel->setString(fmt::format("{}{}{}{}{}{}{}{}{}", m_objectInfoLabel->getString(),
-            objID, objPosition, objRotation, objScale, objBaseColor, objDetailColor, objType, objAddress).c_str());
+        auto objData = f->m_showObjectData ? fmt::format("Data: {}\n", std::string(selectedObject->getSaveString(m_editorLayer))) : "";
+
+        m_objectInfoLabel->setString(fmt::format("{}{}{}{}{}{}{}{}{}{}", m_objectInfoLabel->getString(),
+            objID, objPosition, objRotation, objScale, objBaseColor, objDetailColor, objType, objAddress, objData).c_str());
     }
 };

@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.3 (2025-02-13)
+- Added Object Data (Disabled by default)
+
 ## v1.1.2 (2025-02-08)
 - Fixed hook disabling
 
