@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.4 (2025-02-21)
+- Fixed a bug where the "X" symbol would show in HSV if saturation or brightness was negative
+
 ## v1.1.3 (2025-02-13)
 - Added Object Data (Disabled by default)
 
