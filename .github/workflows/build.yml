@@ -36,6 +36,8 @@ jobs:
       - name: Build the mod
         uses: hiimjasmine00/build-geode-mod@main
         with:
+          bindings: geode-catgirls/bindings
+          bindings-ref: main
           build-config: ${{ matrix.config.build-config || 'Release' }}
           export-pdb: true
           export-symbols: true
