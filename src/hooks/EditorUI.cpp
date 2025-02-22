@@ -17,7 +17,7 @@ class $modify(MOIEditorUI, EditorUI) {
         listenForAllSettingChanges([moveObjectCallHook, transformObjectCallHook, updateObjectInfoLabelHook](std::shared_ptr<SettingV3> setting) {
             auto settingName = setting->getKey();
             if (settingName.starts_with("show-object-")) {
-                if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel();
+                if (auto editorUI = MoreObjectInfo::editorUI()) editorUI->updateObjectInfoLabel();
 
                 auto value = MoreObjectInfo::showObjectInfo(setting->getMod());
                 MOI_HOOK_TOGGLE(EditorUI, updateObjectInfoLabel)
@@ -27,7 +27,7 @@ class $modify(MOIEditorUI, EditorUI) {
                 MOI_HOOK_TOGGLE(EditorUI, moveObjectCall)
                 MOI_HOOK_TOGGLE(EditorUI, transformObjectCall)
             }
-        });
+        }, mod);
     }
 
     void moveObjectCall(EditCommand command) {
@@ -65,21 +65,23 @@ class $modify(MOIEditorUI, EditorUI) {
         auto objScale = MoreObjectInfo::showObjectScale(mod) && (scaleX != 1.0f || scaleY != 1.0f) ?
             scaleX != scaleY ? fmt::format("Scale: {}, {}\n", scaleX, scaleY) : fmt::format("Scale: {}\n", scaleX) : "";
 
-        std::string objBaseColor;
-        std::string objDetailColor;
         auto baseColor = selectedObject->m_baseColor;
         auto detailColor = selectedObject->m_detailColor;
+
+        std::string objBaseColor;
         if (MoreObjectInfo::showObjectBaseColor(mod) && baseColor) {
             auto& hsv = baseColor->m_hsv;
             if (hsv.h != 0.0f || hsv.s != 1.0f || hsv.v != 1.0f || hsv.absoluteSaturation || hsv.absoluteBrightness)
-                objBaseColor = fmt::format("{}HSV: {}, {}{}, {}{}\n", detailColor ? "Base " : "", hsv.h,
+                objBaseColor = fmt::format("{}HSV: {}, {}{:.2f}, {}{:.2f}\n", detailColor ? "Base " : "", hsv.h,
                     hsv.absoluteSaturation ? hsv.s >= 0 ? "+" : "" : "x", hsv.s,
                     hsv.absoluteBrightness ? hsv.v >= 0 ? "+" : "" : "x", hsv.v);
         }
+
+        std::string objDetailColor;
         if (MoreObjectInfo::showObjectDetailColor(mod) && detailColor) {
             auto& hsv = detailColor->m_hsv;
             if (hsv.h != 0.0f || hsv.s != 1.0f || hsv.v != 1.0f || hsv.absoluteSaturation || hsv.absoluteBrightness)
-                objDetailColor = fmt::format("{}HSV: {}, {}{}, {}{}\n", baseColor ? "Detail " : "", hsv.h,
+                objDetailColor = fmt::format("{}HSV: {}, {}{:.2f}, {}{:.2f}\n", baseColor ? "Detail " : "", hsv.h,
                     hsv.absoluteSaturation ? hsv.s >= 0 ? "+" : "" : "x", hsv.s,
                     hsv.absoluteBrightness ? hsv.v >= 0 ? "+" : "" : "x", hsv.v);
         }

@@ -2,14 +2,15 @@
 
 #define MOI_AUTO_ENABLE(className, hookName, funcName) \
     auto hookName##Res = self.getHook(#className"::"#hookName); \
-    if (hookName##Res.isErr()) log::error("Failed to get "#className"::"#hookName" hook: {}", hookName##Res.unwrapErr()); \
+    if (hookName##Res.isErr()) log::logImpl(Severity::Error, mod, "Failed to get "#className"::"#hookName" hook: {}", hookName##Res.unwrapErr()); \
     auto hookName##Hook = hookName##Res.unwrapOr(nullptr); \
     if (hookName##Hook) hookName##Hook->setAutoEnable(MoreObjectInfo::funcName(mod));
 
 #define MOI_HOOK_TOGGLE(className, hookName) \
     if (hookName##Hook) { \
         auto changeRes = value ? hookName##Hook->enable() : hookName##Hook->disable(); \
-        if (changeRes.isErr()) log::error("Failed to {} "#className"::"#hookName" hook: {}", value ? "enable" : "disable", changeRes.unwrapErr()); \
+        if (changeRes.isErr()) log::logImpl(Severity::Error, hookName##Hook->getOwner(), \
+            "Failed to {} "#className"::"#hookName" hook: {}", value ? "enable" : "disable", changeRes.unwrapErr()); \
     }
 
 #define MOI_DYNAMIC_CONTROL(className) \
@@ -19,26 +20,26 @@
             MOI_AUTO_ENABLE(className, ccTouchBegan, dynamicObjectInfo) \
             MOI_AUTO_ENABLE(className, ccTouchMoved, dynamicObjectInfo) \
             MOI_AUTO_ENABLE(className, ccTouchEnded, dynamicObjectInfo) \
-            listenForSettingChanges<bool>("dynamic-object-info", [ccTouchBeganHook, ccTouchMovedHook, ccTouchEndedHook](bool value) { \
+            MoreObjectInfo::settingListener<"dynamic-object-info", bool>([ccTouchBeganHook, ccTouchMovedHook, ccTouchEndedHook](bool value) { \
                 MOI_HOOK_TOGGLE(className, ccTouchBegan) \
                 MOI_HOOK_TOGGLE(className, ccTouchMoved) \
                 MOI_HOOK_TOGGLE(className, ccTouchEnded) \
-            }); \
+            }, mod); \
         } \
         bool ccTouchBegan(CCTouch* touch, CCEvent* event) { \
             auto ret = className::ccTouchBegan(touch, event); \
-            if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel(); \
+            if (auto editorUI = MoreObjectInfo::editorUI()) editorUI->updateObjectInfoLabel(); \
             return ret; \
         } \
         void ccTouchMoved(CCTouch* touch, CCEvent* event) { \
             className::ccTouchMoved(touch, event); \
-            if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel(); \
+            if (auto editorUI = MoreObjectInfo::editorUI()) editorUI->updateObjectInfoLabel(); \
         } \
         void ccTouchEnded(CCTouch* touch, CCEvent* event) { \
             className::ccTouchEnded(touch, event); \
-            if (auto editorUI = EditorUI::get()) editorUI->updateObjectInfoLabel(); \
+            if (auto editorUI = MoreObjectInfo::editorUI()) editorUI->updateObjectInfoLabel(); \
         } \
-    };        
+    };
 
 // Thanks Prevter https://github.com/EclipseMenu/EclipseMenu/blob/v1.1.0/src/modules/config/config.hpp#L135
 template <size_t N>
@@ -68,10 +69,21 @@ public:
     inline static GameManager* GAME_MANAGER = nullptr;
 
     template <TemplateString key, class T>
+    static geode::EventListener<geode::SettingChangedFilterV3>* settingListener(auto&& callback, geode::Mod* mod = geode::Mod::get()) {
+        using SettingType = typename geode::SettingTypeForValueType<T>::SettingType;
+        return new geode::EventListener(
+            [callback = std::move(callback)](std::shared_ptr<geode::SettingV3> setting) {
+                callback(std::static_pointer_cast<SettingType>(setting)->getValue());
+            },
+            geode::SettingChangedFilterV3(mod, std::string(key))
+        );
+    }
+
+    template <TemplateString key, class T>
     static T get(geode::Mod* mod = geode::Mod::get()) {
-        static T value = (geode::listenForSettingChanges<T>(key, [](T newValue) {
+        static T value = (settingListener<key, T>([](T newValue) {
             value = newValue;
-        }), getInternal<T>(mod, key));
+        }, mod), getInternal<T>(mod, key));
         return value;
     }
 
@@ -86,4 +98,5 @@ public:
     static bool showObjectData(geode::Mod* mod = geode::Mod::get());
     static bool showObjectInfo(geode::Mod* mod = geode::Mod::get());
     static bool dynamicObjectInfo(geode::Mod* mod = geode::Mod::get());
+    static EditorUI* editorUI();
 };
