@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.6 (2025-03-29)
+- Added parentheses to X/Y pairs and HSV values
+
 ## v1.1.5 (2025-02-21)
 - Fixed saturation and brightness values to two decimal places
 
