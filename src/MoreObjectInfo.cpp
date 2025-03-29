@@ -1,11 +1,10 @@
 #include "MoreObjectInfo.hpp"
-#include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
 
 using namespace geode::prelude;
 
 $on_mod(Loaded) {
-    MoreObjectInfo::GAME_MANAGER = GameManager::sharedState();
+    MoreObjectInfo::gameManager = GameManager::sharedState();
 }
 
 bool MoreObjectInfo::showObjectID(Mod* mod) {
@@ -55,8 +54,8 @@ bool MoreObjectInfo::dynamicObjectInfo(Mod* mod) {
 }
 
 EditorUI* MoreObjectInfo::editorUI() {
-    if (!GAME_MANAGER) return nullptr;
-    auto lel = GAME_MANAGER->m_levelEditorLayer;
+    if (!gameManager) return nullptr;
+    auto lel = gameManager->m_levelEditorLayer;
     if (!lel) return nullptr;
     return lel->m_editorUI;
 }
