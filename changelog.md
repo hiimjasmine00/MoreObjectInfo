@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.7 (2025-04-01)
+- Update homepage link (April Fools' Day)
+
 ## v1.1.6 (2025-03-29)
 - Added parentheses to X/Y pairs and HSV values
 
