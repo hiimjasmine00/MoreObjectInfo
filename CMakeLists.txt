@@ -9,7 +9,7 @@ endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(GEODE_DISABLE_PRECOMPILED_HEADERS ON)
 
-project(MoreObjectInfo VERSION 1.1.7)
+project(MoreObjectInfo VERSION 1.1.8)
 
 add_library(${PROJECT_NAME} SHARED
     src/hooks/EditorUI.cpp
