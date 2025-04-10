@@ -1,4 +1,5 @@
 #include "../MoreObjectInfo.hpp"
+#include <Geode/binding/DrawGridLayer.hpp>
 #include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
@@ -99,6 +100,9 @@ class $modify(MOIEditorUI, EditorUI) {
 
         objectInfo += MoreObjectInfo::showObjectData(mod) ? fmt::format("Data: {}\n",
             GEODE_ANDROID(std::string)(selectedObject->getSaveString(m_editorLayer))) : "";
+
+        objectInfo += MoreObjectInfo::showObjectTime(mod) ? fmt::format("Time: {}\n",
+            m_editorLayer->m_drawGridLayer->timeForPos(selectedObject->m_obPosition, 0, 0, false, true, false, 0)) : "";
 
         m_objectInfoLabel->setString(objectInfo.c_str());
     }

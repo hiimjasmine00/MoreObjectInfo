@@ -43,10 +43,14 @@ bool MoreObjectInfo::showObjectData(Mod* mod) {
     return get<"show-object-data", bool>(mod);
 }
 
+bool MoreObjectInfo::showObjectTime(Mod* mod) {
+    return get<"show-object-time", bool>(mod);
+}
+
 bool MoreObjectInfo::showObjectInfo(Mod* mod) {
     return showObjectID(mod) || showObjectPosition(mod) || showObjectRotation(mod) || showObjectScale(mod) ||
         showObjectBaseColor(mod) || showObjectDetailColor(mod) || showObjectType(mod) || showObjectAddress(mod) ||
-        showObjectData(mod);
+        showObjectData(mod) || showObjectTime(mod);
 }
 
 bool MoreObjectInfo::dynamicObjectInfo(Mod* mod) {

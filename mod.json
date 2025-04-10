@@ -81,6 +81,12 @@
             "description": "Whether to show the object's data.",
             "type": "bool",
             "default": false
+        },
+        "show-object-time": {
+            "name": "Time",
+            "description": "Whether to show the object's time.",
+            "type": "bool",
+            "default": true
         }
     },
     "links": {

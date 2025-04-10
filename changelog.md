@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.9 (2025-04-10)
+- Added Object Time
+
 ## v1.1.8 (2025-04-05)
 - Added support for iOS
 

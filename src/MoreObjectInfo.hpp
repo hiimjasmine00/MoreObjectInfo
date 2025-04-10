@@ -106,6 +106,7 @@ public:
     static bool showObjectType(geode::Mod* mod = geode::Mod::get());
     static bool showObjectAddress(geode::Mod* mod = geode::Mod::get());
     static bool showObjectData(geode::Mod* mod = geode::Mod::get());
+    static bool showObjectTime(geode::Mod* mod = geode::Mod::get());
     static bool showObjectInfo(geode::Mod* mod = geode::Mod::get());
     static bool dynamicObjectInfo(geode::Mod* mod = geode::Mod::get());
     static EditorUI* editorUI();
