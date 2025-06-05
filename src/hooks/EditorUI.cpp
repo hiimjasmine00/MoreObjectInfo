@@ -9,17 +9,6 @@
 using namespace geode::prelude;
 
 class $modify(MOIEditorUI, EditorUI) {
-    inline static constexpr std::array types = {
-        "Solid", "Unknown", "Hazard", "Inverse Gravity Portal", "Normal Gravity Portal", "Ship Portal",
-        "Cube Portal", "Decoration", "Yellow Jump Pad", "Pink Jump Pad", "Gravity Pad", "Yellow Jump Ring",
-        "Pink Jump Ring", "Gravity Ring", "Inverse Mirror Portal", "Normal Mirror Portal", "Ball Portal", "Regular Size Portal",
-        "Mini Size Portal", "Ufo Portal", "Modifier", "Breakable", "Secret Coin", "Dual Portal",
-        "Solo Portal", "Slope", "Wave Portal", "Robot Portal", "Teleport Portal", "Green Ring",
-        "Collectible", "User Coin", "Drop Ring", "Spider Portal", "Red Jump Pad", "Red Jump Ring",
-        "Custom Ring", "Dash Ring", "Gravity Dash Ring", "Collision Object", "Special", "Swing Portal",
-        "Gravity Toggle Portal", "Spider Orb", "Spider Pad", "Enter Effect Object", "Teleport Orb", "Animated Hazard"
-    };
-
     static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
         auto mod = Mod::get();
         MOI_AUTO_ENABLE(EditorUI, moveObjectCall, dynamicObjectInfo)
@@ -65,8 +54,8 @@ class $modify(MOIEditorUI, EditorUI) {
 
         if (MoreObjectInfo::showObjectID(mod)) objectInfo += fmt::format("ID: {}\n", selectedObject->m_objectID);
 
-        if (MoreObjectInfo::showObjectPosition(mod))
-            objectInfo += fmt::format("Position: ({}, {})\n", selectedObject->m_obPosition.x, selectedObject->m_obPosition.y - 90.0f);
+        auto& pos = selectedObject->m_obPosition;
+        if (MoreObjectInfo::showObjectPosition(mod)) objectInfo += fmt::format("Position: ({}, {})\n", pos.x, pos.y - 90.0f);
 
         auto rX = selectedObject->m_fRotationX;
         auto rY = selectedObject->m_fRotationY;
@@ -83,15 +72,26 @@ class $modify(MOIEditorUI, EditorUI) {
 
         if (MoreObjectInfo::showObjectBaseColor(mod) && base) {
             auto& [h, s, v, sa, va] = base->m_hsv;
-            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) objectInfo += fmt::format("{}HSV: ({}, {}{:.2f}, {}{:.2f})\n",
-                detail ? "Base " : "", h, sa ? s >= 0 ? "+" : "" : "x", s, va ? v >= 0 ? "+" : "" : "x", v);
+            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) objectInfo += fmt::format("{}HSV: ({}, {}{}%, {}{}%)\n",
+                detail ? "Base " : "", h, sa ? s >= 0 ? "+" : "" : "x", s * 100.0f, va ? v >= 0 ? "+" : "" : "x", v * 100.0f);
         }
 
         if (MoreObjectInfo::showObjectDetailColor(mod) && detail) {
             auto& [h, s, v, sa, va] = detail->m_hsv;
-            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) objectInfo += fmt::format("{}HSV: ({}, {}{:.2f}, {}{:.2f})\n",
-                base ? "Detail " : "", h, sa ? s >= 0 ? "+" : "" : "x", s, va ? v >= 0 ? "+" : "" : "x", v);
+            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) objectInfo += fmt::format("{}HSV: ({}, {}{}%, {}{}%)\n",
+                base ? "Detail " : "", h, sa ? s >= 0 ? "+" : "" : "x", s * 100.0f, va ? v >= 0 ? "+" : "" : "x", v * 100.0f);
         }
+
+        constexpr std::array types = {
+            "Solid", "Unknown", "Hazard", "Inverse Gravity Portal", "Normal Gravity Portal", "Ship Portal",
+            "Cube Portal", "Decoration", "Yellow Jump Pad", "Pink Jump Pad", "Gravity Pad", "Yellow Jump Ring",
+            "Pink Jump Ring", "Gravity Ring", "Inverse Mirror Portal", "Normal Mirror Portal", "Ball Portal", "Regular Size Portal",
+            "Mini Size Portal", "Ufo Portal", "Modifier", "Breakable", "Secret Coin", "Dual Portal",
+            "Solo Portal", "Slope", "Wave Portal", "Robot Portal", "Teleport Portal", "Green Ring",
+            "Collectible", "User Coin", "Drop Ring", "Spider Portal", "Red Jump Pad", "Red Jump Ring",
+            "Custom Ring", "Dash Ring", "Gravity Dash Ring", "Collision Object", "Special", "Swing Portal",
+            "Gravity Toggle Portal", "Spider Orb", "Spider Pad", "Enter Effect Object", "Teleport Orb", "Animated Hazard"
+        };
 
         auto type = (int)selectedObject->m_objectType;
         objectInfo += MoreObjectInfo::showObjectType(mod) ? fmt::format("Type: {} ({})\n", type < types.size() ? types[type] : "Unknown", type) : "";
@@ -101,8 +101,7 @@ class $modify(MOIEditorUI, EditorUI) {
         objectInfo += MoreObjectInfo::showObjectData(mod) ? fmt::format("Data: {}\n",
             GEODE_ANDROID(std::string)(selectedObject->getSaveString(m_editorLayer))) : "";
 
-        objectInfo += MoreObjectInfo::showObjectTime(mod) ? fmt::format("Time: {}\n",
-            m_editorLayer->m_drawGridLayer->timeForPos(selectedObject->m_obPosition, 0, 0, false, true, false, 0)) : "";
+        objectInfo += MoreObjectInfo::showObjectTime(mod) ? fmt::format("Time: {}\n", m_editorLayer->timeForPos(pos, 0, 0, false, 0)) : "";
 
         m_objectInfoLabel->setString(objectInfo.c_str());
     }

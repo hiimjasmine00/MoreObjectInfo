@@ -1,5 +1,5 @@
 # More Object Info
-A mod that improves editor object info.
+Object info, but better.
 
 # Features
 - Object info text that changes dynamically when the object is moved, rotated, scaled, or transformed

@@ -1,16 +1,16 @@
 {
-    "geode": "4.3.1",
+    "geode": "4.5.0",
     "gd": {
         "win": "2.2074",
         "mac": "2.2074",
         "android": "2.2074",
         "ios": "2.2074"
     },
-    "version": "v1.1.9",
+    "version": "v1.1.10",
     "id": "hiimjustin000.more_object_info",
     "name": "More Object Info",
     "developer": "hiimjasmine00",
-    "description": "A mod that improves editor object info.",
+    "description": "Object info, but better.",
     "settings": {
         "general": {
             "name": "General",

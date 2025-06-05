@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.10 (2025-06-05)
+- Changed saturation and brightness values to be displayed as percentages
+
 ## v1.1.9 (2025-04-10)
 - Added Object Time
 

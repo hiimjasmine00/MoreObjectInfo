@@ -2,30 +2,36 @@
 #include <Geode/loader/Mod.hpp>
 
 #define MOI_AUTO_ENABLE(className, hookName, funcName) \
-    auto hookName##Hook = self.getHook(#className"::"#hookName).map([mod](geode::Hook* hook) { \
-        return hook->setAutoEnable(MoreObjectInfo::funcName(mod)), hook; \
-    }).mapErr([mod](const std::string& err) { \
-        return geode::log::logImpl(geode::Severity::Error, mod, "Failed to get "#className"::"#hookName" hook: {}", err), err; \
+    auto hookName##Hook = self.getHook(#className"::"#hookName).inspect([mod](geode::Hook* hook) { \
+        hook->setAutoEnable(MoreObjectInfo::funcName(mod)); \
+    }).inspectErr([mod](const std::string& err) { \
+        geode::log::logImpl(geode::Severity::Error, mod, "Failed to get "#className"::"#hookName" hook: {}", err); \
     }).unwrapOr(nullptr); \
 
 #define MOI_HOOK_TOGGLE(className, hookName) \
-    if (hookName##Hook) (void)(value ? hookName##Hook->enable().mapErr([hookName##Hook](const std::string& err) { \
-        return geode::log::error("Failed to enable "#className"::"#hookName" hook: {}", err), err; \
-    }) : hookName##Hook->disable().mapErr([hookName##Hook](const std::string& err) { \
-        return geode::log::error("Failed to disable "#className"::"#hookName" hook: {}", err), err; \
+    if (hookName##Hook) (void)(value ? hookName##Hook->enable().inspectErr([hookName##Hook](const std::string& err) { \
+        geode::log::error("Failed to enable "#className"::"#hookName" hook: {}", err); \
+    }) : hookName##Hook->disable().inspectErr([hookName##Hook](const std::string& err) { \
+        geode::log::error("Failed to disable "#className"::"#hookName" hook: {}", err); \
     })); \
 
 #define MOI_DYNAMIC_CONTROL(className) \
     class $modify(MOI##className, className) { \
-        static void onModify(geode::modifier::ModifyBase<ModifyDerive<MOI##className, className>>& self) { \
+        static void onModify(auto& self) { \
             auto mod = geode::Mod::get(); \
-            MOI_AUTO_ENABLE(className, ccTouchBegan, dynamicObjectInfo) \
-            MOI_AUTO_ENABLE(className, ccTouchMoved, dynamicObjectInfo) \
-            MOI_AUTO_ENABLE(className, ccTouchEnded, dynamicObjectInfo) \
-            MoreObjectInfo::settingListener<"dynamic-object-info", bool>([ccTouchBeganHook, ccTouchMovedHook, ccTouchEndedHook](bool value) { \
-                MOI_HOOK_TOGGLE(className, ccTouchBegan) \
-                MOI_HOOK_TOGGLE(className, ccTouchMoved) \
-                MOI_HOOK_TOGGLE(className, ccTouchEnded) \
+            auto dynamicObjectInfo = MoreObjectInfo::dynamicObjectInfo(mod); \
+            auto& hooks = self.m_hooks; \
+            for (auto& [name, hook] : hooks) { \
+                hook->setAutoEnable(dynamicObjectInfo); \
+            } \
+            if (!hooks.empty()) MoreObjectInfo::settingListener<"dynamic-object-info", bool>([hooks](bool value) { \
+                for (auto& [name, hook] : hooks) { \
+                    (void)(value ? hook->enable().inspectErr([&name](const std::string& err) { \
+                        geode::log::error("Failed to enable {} hook: {}", name, err); \
+                    }) : hook->disable().inspectErr([&name](const std::string& err) { \
+                        geode::log::error("Failed to disable {} hook: {}", name, err); \
+                    })); \
+                } \
             }, mod); \
         } \
         bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) { \
