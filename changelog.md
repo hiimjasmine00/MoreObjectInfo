@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.1.11 (2025-06-22)
+- Ported to Geode v4.6.1
+
 ## v1.1.10 (2025-06-05)
 - Changed saturation and brightness values to be displayed as percentages
 
