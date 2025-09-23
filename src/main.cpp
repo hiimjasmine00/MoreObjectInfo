@@ -60,7 +60,7 @@ class $modify(EditorUI) {
 				if (obj->m_objectRadius > 0)
 					newInfo += fmt::format("Radius: {}\n", obj->m_objectRadius);
 				else
-					newInfo += fmt::format("Content Size: ({}, {})\n", obj->getObjectRect().size.width, obj->getObjectRect().size.width);
+					newInfo += fmt::format("Content Size: ({}, {})\n", obj->getObjectRect().size.width, obj->getObjectRect().size.height);
 			}
 
 			if (settingEnabled<"show-object-scale">() && (obj->m_scaleX != 1.0f || obj->m_scaleY != 1.0f)) {
