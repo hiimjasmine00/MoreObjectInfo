@@ -56,8 +56,12 @@ class $modify(EditorUI) {
 			if (settingEnabled<"show-object-rotation">() && obj->getRotation())
 				newInfo += fmt::format("Rotation: {}\n", obj->getRotation());
 
-			if (settingEnabled<"show-object-content-size">())
-				newInfo += fmt::format("Content Size: ({}, {})\n", obj->getObjectRect().size.width, obj->getObjectRect().size.width);
+			if (settingEnabled<"show-object-content-size">()) {
+				if (obj->getObjectRadius())
+					newInfo += fmt::format("Radius: {}\n", obj->getObjectRadius());
+				else
+					newInfo += fmt::format("Content Size: ({}, {})\n", obj->getObjectRect().size.width, obj->getObjectRect().size.width);
+			}
 
 			if (settingEnabled<"show-object-scale">() && (obj->m_scaleX != 1.0f || obj->m_scaleY != 1.0f)) {
 				if (obj->m_scaleX == obj->m_scaleY)
@@ -89,5 +93,3 @@ class $modify(EditorUI) {
 		}
 	}
 };
-
-
