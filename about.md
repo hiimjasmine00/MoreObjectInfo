@@ -8,9 +8,12 @@ Object info, but better.
 # List of Properties
 - Object ID
 - Position (X, Y)
+- Content Size (W, H)
 - Rotation (X, Y)
 - Scale (X, Y)
 - Base Color HSV
 - Detail Color HSV
 - Object Type
 - Object Address
+- Object Data
+- Object Time

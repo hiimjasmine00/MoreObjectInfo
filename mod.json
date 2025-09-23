@@ -1,15 +1,15 @@
 {
-    "geode": "4.6.1",
+    "geode": "4.8.0",
     "gd": {
         "win": "2.2074",
         "mac": "2.2074",
         "android": "2.2074",
         "ios": "2.2074"
     },
-    "version": "v1.1.11",
+    "version": "v1.2.0",
     "id": "hiimjustin000.more_object_info",
     "name": "More Object Info",
-    "developer": "hiimjasmine00",
+    "developers": ["hiimjasmine00", "camila314"],
     "description": "Object info, but better.",
     "settings": {
         "general": {
@@ -43,6 +43,12 @@
         "show-object-rotation": {
             "name": "Rotation",
             "description": "Whether to show the object's rotation.",
+            "type": "bool",
+            "default": true
+        },
+        "show-object-content-size": {
+            "name": "Content Size",
+            "description": "Whether to show the object's content size.",
             "type": "bool",
             "default": true
         },
