@@ -57,8 +57,8 @@ class $modify(EditorUI) {
 				newInfo += fmt::format("Rotation: {}\n", obj->getRotation());
 
 			if (settingEnabled<"show-object-content-size">()) {
-				if (obj->getObjectRadius())
-					newInfo += fmt::format("Radius: {}\n", obj->getObjectRadius());
+				if (obj->m_objectRadius > 0)
+					newInfo += fmt::format("Radius: {}\n", obj->m_objectRadius);
 				else
 					newInfo += fmt::format("Content Size: ({}, {})\n", obj->getObjectRect().size.width, obj->getObjectRect().size.width);
 			}
