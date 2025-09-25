@@ -42,13 +42,9 @@ bool MoreObjectInfo::get(const std::unordered_map<std::string_view, BoolSettingV
     return false;
 }
 
-GameManager* MoreObjectInfo::gameManager() {
-    static GameManager* gm = GameManager::sharedState();
-    return gm;
-}
-
 void MoreObjectInfo::updateObjectInfoLabel() {
-    if (auto lel = gameManager()->m_levelEditorLayer) {
+    static GameManager* gm = GameManager::sharedState();
+    if (auto lel = gm->m_levelEditorLayer) {
         if (auto ui = lel->m_editorUI) ui->updateObjectInfoLabel();
     }
 }

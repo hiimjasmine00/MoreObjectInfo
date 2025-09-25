@@ -73,8 +73,7 @@ class $modify(MOIEditorUI, EditorUI) {
     void updateObjectInfoLabel() {
         EditorUI::updateObjectInfoLabel();
 
-        auto valueKeeper = MoreObjectInfo::gameManager()->m_valueKeeper;
-        if (!valueKeeper || !valueKeeper->valueForKey("gv_0041")->boolValue()) return;
+        if (!m_objectInfoLabel || !m_objectInfoLabel->isVisible()) return;
 
         auto selectedObject = m_selectedObject;
         if (!selectedObject) return;
