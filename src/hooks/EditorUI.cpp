@@ -1,5 +1,4 @@
 #include "../MoreObjectInfo.hpp"
-#include <Geode/binding/DrawGridLayer.hpp>
 #include <Geode/binding/GameManager.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
@@ -10,25 +9,55 @@ using namespace geode::prelude;
 
 class $modify(MOIEditorUI, EditorUI) {
     static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
-        auto mod = Mod::get();
-        MOI_AUTO_ENABLE(EditorUI, moveObjectCall, dynamicObjectInfo)
-        MOI_AUTO_ENABLE(EditorUI, transformObjectCall, dynamicObjectInfo)
-        MOI_AUTO_ENABLE(EditorUI, updateObjectInfoLabel, showObjectInfo)
+        auto& settings = MoreObjectInfo::getSettings();
+        auto dynamicObjectInfo = MoreObjectInfo::get(settings, "dynamic-object-info");
+        auto extraObjectInfo = MoreObjectInfo::get(settings, "extra-object-info");
 
-        listenForAllSettingChangesV3([moveObjectCallHook, transformObjectCallHook, updateObjectInfoLabelHook](std::shared_ptr<SettingV3> setting) {
+        Hook* initHook = nullptr;
+        if (auto it = self.m_hooks.find("EditorUI::init"); it == self.m_hooks.end()) {
+            initHook = it->second.get();
+            initHook->setAutoEnable(extraObjectInfo);
+        }
+
+        Hook* moveHook = nullptr;
+        if (auto it = self.m_hooks.find("EditorUI::moveObjectCall"); it == self.m_hooks.end()) {
+            moveHook = it->second.get();
+            moveHook->setAutoEnable(dynamicObjectInfo);
+        }
+
+        Hook* transformHook = nullptr;
+        if (auto it = self.m_hooks.find("EditorUI::transformObjectCall"); it == self.m_hooks.end()) {
+            transformHook = it->second.get();
+            transformHook->setAutoEnable(dynamicObjectInfo);
+        }
+
+        Hook* updateHook = nullptr;
+        if (auto it = self.m_hooks.find("EditorUI::updateObjectInfoLabel"); it == self.m_hooks.end()) {
+            updateHook = it->second.get();
+            updateHook->setAutoEnable(extraObjectInfo);
+        }
+
+        new EventListener([initHook, moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
             auto settingName = setting->getKey();
-            if (settingName.starts_with("show-object-")) {
-                if (auto editorUI = MoreObjectInfo::editorUI()) editorUI->updateObjectInfoLabel();
-
-                auto value = MoreObjectInfo::showObjectInfo(setting->getMod());
-                MOI_HOOK_TOGGLE(EditorUI, updateObjectInfoLabel)
+            auto value = static_cast<BoolSettingV3*>(setting.get())->getValue();
+            if (settingName == "extra-object-info") {
+                MoreObjectInfo::toggle(initHook, value);
+                MoreObjectInfo::toggle(updateHook, value);
             }
             else if (settingName == "dynamic-object-info") {
-                auto value = std::static_pointer_cast<BoolSettingV3>(setting)->getValue();
-                MOI_HOOK_TOGGLE(EditorUI, moveObjectCall)
-                MOI_HOOK_TOGGLE(EditorUI, transformObjectCall)
+                MoreObjectInfo::toggle(moveHook, value);
+                MoreObjectInfo::toggle(transformHook, value);
             }
-        }, mod);
+            MoreObjectInfo::updateObjectInfoLabel();
+        }, SettingChangedFilterV3(GEODE_MOD_ID, std::nullopt));
+    }
+
+    bool init(LevelEditorLayer* lel) {
+        if (!EditorUI::init(lel)) return false;
+
+        m_objectInfoLabel->setPositionX(82.0f);
+
+        return true;
     }
 
     void moveObjectCall(EditCommand command) {
@@ -44,42 +73,83 @@ class $modify(MOIEditorUI, EditorUI) {
     void updateObjectInfoLabel() {
         EditorUI::updateObjectInfoLabel();
 
-        if (!MoreObjectInfo::variable<"0041">()) return;
+        auto valueKeeper = MoreObjectInfo::gameManager()->m_valueKeeper;
+        if (!valueKeeper || !valueKeeper->valueForKey("gv_0041")->boolValue()) return;
 
         auto selectedObject = m_selectedObject;
         if (!selectedObject) return;
 
         std::string objectInfo = m_objectInfoLabel->getString();
-        auto mod = Mod::get();
+        auto& settings = MoreObjectInfo::getSettings();
 
-        if (MoreObjectInfo::showObjectID(mod)) objectInfo += fmt::format("ID: {}\n", selectedObject->m_objectID);
+        if (MoreObjectInfo::get(settings, "show-object-id")) {
+            objectInfo += fmt::format("ID: {}\n", selectedObject->m_objectID);
+        }
 
-        auto& pos = selectedObject->m_obPosition;
-        if (MoreObjectInfo::showObjectPosition(mod)) objectInfo += fmt::format("Position: ({}, {})\n", pos.x, pos.y - 90.0f);
+        if (MoreObjectInfo::get(settings, "show-object-position")) {
+            auto& pos = selectedObject->m_obPosition;
+            objectInfo += fmt::format("Position: ({}, {})\n", pos.x, pos.y - 90.0f);
+        }
 
-        auto rX = selectedObject->m_fRotationX;
-        auto rY = selectedObject->m_fRotationY;
-        if (MoreObjectInfo::showObjectRotation(mod) && (rX != 0.0f || rY != 0.0f))
-            objectInfo += rX != rY ? fmt::format("Rotation: ({}, {})\n", rX, rY) : fmt::format("Rotation: {}\n", rX);
+        if (MoreObjectInfo::get(settings, "show-object-rotation")) {
+            auto rX = selectedObject->m_fRotationX;
+            auto rY = selectedObject->m_fRotationY;
+            if (rX != 0.0f || rY != 0.0f) {
+                objectInfo += rX != rY ? fmt::format("Rotation: ({}, {})\n", rX, rY) : fmt::format("Rotation: {}\n", rX);
+            }
+        }
 
-        auto sX = selectedObject->m_scaleX;
-        auto sY = selectedObject->m_scaleY;
-        if (MoreObjectInfo::showObjectScale(mod) && (sX != 1.0f || sY != 1.0f))
-            objectInfo += sX != sY ? fmt::format("Scale: ({}, {})\n", sX, sY) : fmt::format("Scale: {}\n", sX);
+        if (MoreObjectInfo::get(settings, "show-object-scale")) {
+            auto sX = selectedObject->m_scaleX;
+            auto sY = selectedObject->m_scaleY;
+            if (sX != 1.0f || sY != 1.0f) {
+                objectInfo += sX != sY ? fmt::format("Scale: ({}, {})\n", sX, sY) : fmt::format("Scale: {}\n", sX);
+            }
+        }
+
+        if (MoreObjectInfo::get(settings, "show-object-size")) {
+            auto& size = selectedObject->getObjectRect().size;
+            objectInfo += fmt::format("Size: ({}, {})\n", size.width, size.height);
+        }
+
+        if (MoreObjectInfo::get(settings, "show-object-radius")) {
+            auto radius = selectedObject->m_objectRadius * std::max(selectedObject->m_scaleX, selectedObject->m_scaleY);
+            if (radius != 0.0f) {
+                objectInfo += fmt::format("Radius: {}\n", radius);
+            }
+        }
 
         auto base = selectedObject->m_baseColor;
         auto detail = selectedObject->m_detailColor;
 
-        if (MoreObjectInfo::showObjectBaseColor(mod) && base) {
+        if (MoreObjectInfo::get(settings, "show-object-base-color") && base) {
             auto& [h, s, v, sa, va] = base->m_hsv;
-            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) objectInfo += fmt::format("{}HSV: ({}, {}{}%, {}{}%)\n",
-                detail ? "Base " : "", h, sa ? s >= 0 ? "+" : "" : "x", s * 100.0f, va ? v >= 0 ? "+" : "" : "x", v * 100.0f);
+            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) {
+                objectInfo += fmt::format(
+                    "{}HSV: ({}, {}{}%, {}{}%)\n",
+                    detail ? "Base " : "",
+                    h,
+                    sa ? s >= 0.0f ? "+" : "" : "x",
+                    s * 100.0f,
+                    va ? v >= 0.0f ? "+" : "" : "x",
+                    v * 100.0f
+                );
+            }
         }
 
-        if (MoreObjectInfo::showObjectDetailColor(mod) && detail) {
+        if (MoreObjectInfo::get(settings, "show-object-detail-color") && detail) {
             auto& [h, s, v, sa, va] = detail->m_hsv;
-            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) objectInfo += fmt::format("{}HSV: ({}, {}{}%, {}{}%)\n",
-                base ? "Detail " : "", h, sa ? s >= 0 ? "+" : "" : "x", s * 100.0f, va ? v >= 0 ? "+" : "" : "x", v * 100.0f);
+            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) {
+                objectInfo += fmt::format(
+                    "{}HSV: ({}, {}{}%, {}{}%)\n",
+                    base ? "Detail " : "",
+                    h,
+                    sa ? s >= 0.0f ? "+" : "" : "x",
+                    s * 100.0f,
+                    va ? v >= 0.0f ? "+" : "" : "x",
+                    v * 100.0f
+                );
+            }
         }
 
         constexpr std::array types = {
@@ -93,15 +163,23 @@ class $modify(MOIEditorUI, EditorUI) {
             "Gravity Toggle Portal", "Spider Orb", "Spider Pad", "Enter Effect Object", "Teleport Orb", "Animated Hazard"
         };
 
-        auto type = (int)selectedObject->m_objectType;
-        objectInfo += MoreObjectInfo::showObjectType(mod) ? fmt::format("Type: {} ({})\n", type < types.size() ? types[type] : "Unknown", type) : "";
+        if (MoreObjectInfo::get(settings, "show-object-type")) {
+            auto type = (int)selectedObject->m_objectType;
+            objectInfo += fmt::format("Type: {} ({})\n", type < types.size() ? types[type] : "Unknown", type);
+        }
 
-        objectInfo += MoreObjectInfo::showObjectAddress(mod) ? fmt::format("Address: 0x{:x}\n", reinterpret_cast<uintptr_t>(selectedObject)) : "";
+        if (MoreObjectInfo::get(settings, "show-object-address")) {
+            objectInfo += fmt::format("Address: 0x{:x}\n", reinterpret_cast<uintptr_t>(selectedObject));
+        }
 
-        objectInfo += MoreObjectInfo::showObjectData(mod) ? fmt::format("Data: {}\n",
-            GEODE_ANDROID(std::string)(selectedObject->getSaveString(m_editorLayer))) : "";
+        if (MoreObjectInfo::get(settings, "show-object-data")) {
+            objectInfo += fmt::format("Data: {}\n", GEODE_ANDROID(std::string)(selectedObject->getSaveString(m_editorLayer)));
+        }
 
-        objectInfo += MoreObjectInfo::showObjectTime(mod) ? fmt::format("Time: {}\n", m_editorLayer->timeForPos(pos, 0, 0, false, 0)) : "";
+        if (MoreObjectInfo::get(settings, "show-object-time")) {
+            auto& pos = selectedObject->m_obPosition;
+            objectInfo += fmt::format("Time: {}\n", m_editorLayer->timeForPos(pos, 0, 0, false, 0));
+        }
 
         m_objectInfoLabel->setString(objectInfo.c_str());
     }

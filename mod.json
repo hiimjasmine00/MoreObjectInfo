@@ -1,12 +1,12 @@
 {
-    "geode": "4.6.1",
+    "geode": "4.8.0",
     "gd": {
         "win": "2.2074",
         "mac": "2.2074",
         "android": "2.2074",
         "ios": "2.2074"
     },
-    "version": "v1.1.11",
+    "version": "v1.2.0",
     "id": "hiimjustin000.more_object_info",
     "name": "More Object Info",
     "developer": "hiimjasmine00",
@@ -16,6 +16,12 @@
             "name": "General",
             "description": "General settings for the mod.",
             "type": "title"
+        },
+        "extra-object-info": {
+            "name": "Extra Object Info",
+            "description": "Whether to show extra object info in the object info text.",
+            "type": "bool",
+            "default": true
         },
         "dynamic-object-info": {
             "name": "Dynamic Object Info",
@@ -32,60 +38,84 @@
             "name": "ID",
             "description": "Whether to show the object's ID.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-position": {
             "name": "Position",
             "description": "Whether to show the object's position.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-rotation": {
             "name": "Rotation",
             "description": "Whether to show the object's rotation.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-scale": {
             "name": "Scale",
             "description": "Whether to show the object's scale.",
             "type": "bool",
+            "enable-if": "extra-object-info",
+            "default": true
+        },
+        "show-object-size": {
+            "name": "Size",
+            "description": "Whether to show the object's size.",
+            "type": "bool",
+            "enable-if": "extra-object-info",
+            "default": true
+        },
+        "show-object-radius": {
+            "name": "Radius",
+            "description": "Whether to show the object's radius.",
+            "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-base-color": {
             "name": "Base Color HSV",
             "description": "Whether to show the object's base color HSV.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-detail-color": {
             "name": "Detail Color HSV",
             "description": "Whether to show the object's detail color HSV.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-type": {
             "name": "Type",
             "description": "Whether to show the object's type.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         },
         "show-object-address": {
             "name": "Address",
             "description": "Whether to show the object's address.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": false
         },
         "show-object-data": {
             "name": "Data",
             "description": "Whether to show the object's data.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": false
         },
         "show-object-time": {
             "name": "Time",
             "description": "Whether to show the object's time.",
             "type": "bool",
+            "enable-if": "extra-object-info",
             "default": true
         }
     },

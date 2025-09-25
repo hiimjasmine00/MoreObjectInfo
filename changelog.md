@@ -1,4 +1,10 @@
 # More Object Info Changelog
+## v1.2.0 (2025-09-24)
+- Added "Extra Object Info" setting to enable/disable all extra object properties at once
+- Added Object Size
+- Added Object Radius
+- Moved the object info text slightly to the right to reduce the chance of overlapping
+
 ## v1.1.11 (2025-06-22)
 - Ported to Geode v4.6.1
 
