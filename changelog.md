@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.2.1 (2025-10-09)
+- Fixed a bug where the "Extra Object Info" and "Dynamic Object Info" settings would not properly toggle functionality
+
 ## v1.2.0 (2025-09-24)
 - Added "Extra Object Info" setting to enable/disable all extra object properties at once
 - Added Object Size
