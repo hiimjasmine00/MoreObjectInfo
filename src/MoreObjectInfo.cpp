@@ -28,15 +28,15 @@ static std::unordered_map<std::string_view, BoolSettingV3*> settings = [] {
         "show-object-time"
     };
     for (auto key : keys) {
-        settings.emplace(key, static_cast<BoolSettingV3*>(msm->get(key).get()));
+        if (auto setting = std::static_pointer_cast<BoolSettingV3>(msm->get(key))) {
+            settings.emplace(key, setting.get());
+        }
     }
     return settings;
 }();
 
 bool MoreObjectInfo::get(std::string_view key) {
-    if (auto it = settings.find(key); it != settings.end()) {
-        if (it->second) return it->second->getValue();
-    }
+    if (auto it = settings.find(key); it != settings.end()) return it->second->getValue();
     return false;
 }
 
@@ -49,8 +49,8 @@ void MoreObjectInfo::updateObjectInfoLabel() {
 
 void MoreObjectInfo::toggle(Hook* hook, bool enable) {
     if (hook) {
-        if (auto res = hook->toggle(enable); res.isErr()) {
-            log::error("Failed to toggle hook: {}", res.unwrapErr());
+        if (auto err = hook->toggle(enable).err()) {
+            log::error("Failed to toggle {} hook: {}", hook->getDisplayName(), *err);
         }
     }
 }
@@ -64,7 +64,7 @@ void MoreObjectInfo::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks)
     }
 
     new EventListener([hooks = hooks](std::shared_ptr<SettingV3> setting) {
-        auto value = static_cast<BoolSettingV3*>(setting.get())->getValue();
+        auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
         for (auto& hook : std::views::values(hooks)) {
             toggle(hook.get(), value);
         }

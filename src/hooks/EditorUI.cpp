@@ -37,7 +37,7 @@ class $modify(MOIEditorUI, EditorUI) {
 
         new EventListener([initHook, moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
             auto settingName = setting->getKey();
-            auto value = static_cast<BoolSettingV3*>(setting.get())->getValue();
+            auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
             if (settingName == "extra-object-info") {
                 MoreObjectInfo::toggle(initHook, value);
                 MoreObjectInfo::toggle(updateHook, value);
@@ -169,12 +169,11 @@ class $modify(MOIEditorUI, EditorUI) {
         }
 
         if (MoreObjectInfo::get("show-object-data")) {
-            objectInfo += fmt::format("Data: {}\n", GEODE_ANDROID(std::string)(selectedObject->getSaveString(m_editorLayer)));
+            objectInfo += fmt::format("Data: {}\n", std::string(selectedObject->getSaveString(m_editorLayer)));
         }
 
         if (MoreObjectInfo::get("show-object-time")) {
-            auto& pos = selectedObject->m_obPosition;
-            objectInfo += fmt::format("Time: {}\n", m_editorLayer->timeForPos(pos, 0, 0, false, 0));
+            objectInfo += fmt::format("Time: {}\n", m_editorLayer->timeForPos(selectedObject->m_obPosition, 0, 0, false, 0));
         }
 
         m_objectInfoLabel->setString(objectInfo.c_str());

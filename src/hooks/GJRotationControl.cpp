@@ -9,9 +9,9 @@ class $modify(MOIRotationControl, GJRotationControl) {
     }
 
     bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
-        auto ret = GJRotationControl::ccTouchBegan(touch, event);
+        if (!GJRotationControl::ccTouchBegan(touch, event)) return false;
         MoreObjectInfo::updateObjectInfoLabel();
-        return ret;
+        return true;
     }
 
     void ccTouchMoved(CCTouch* touch, CCEvent* event) {

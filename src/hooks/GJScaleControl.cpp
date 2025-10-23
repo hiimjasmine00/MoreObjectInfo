@@ -9,9 +9,9 @@ class $modify(MOIScaleControl, GJScaleControl) {
     }
 
     bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
-        auto ret = GJScaleControl::ccTouchBegan(touch, event);
+        if (!GJScaleControl::ccTouchBegan(touch, event)) return false;
         MoreObjectInfo::updateObjectInfoLabel();
-        return ret;
+        return true;
     }
 
     void ccTouchMoved(CCTouch* touch, CCEvent* event) {

@@ -9,9 +9,9 @@ class $modify(MOITransformControl, GJTransformControl) {
     }
 
     bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
-        auto ret = GJTransformControl::ccTouchBegan(touch, event);
+        if (!GJTransformControl::ccTouchBegan(touch, event)) return false;
         MoreObjectInfo::updateObjectInfoLabel();
-        return ret;
+        return true;
     }
 
     void ccTouchMoved(CCTouch* touch, CCEvent* event) {
