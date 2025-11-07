@@ -1,11 +1,12 @@
 #include "../MoreObjectInfo.hpp"
 #include <Geode/modify/GJTransformControl.hpp>
+#include <jasmine/hook.hpp>
 
 using namespace geode::prelude;
 
 class $modify(MOITransformControl, GJTransformControl) {
     static void onModify(ModifyBase<ModifyDerive<MOITransformControl, GJTransformControl>>& self) {
-        MoreObjectInfo::modify(self.m_hooks);
+        jasmine::hook::modify(self.m_hooks, "dynamic-object-info");
     }
 
     bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
