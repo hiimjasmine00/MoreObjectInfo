@@ -3,6 +3,7 @@
 #include <Geode/binding/GJSpriteColor.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
+#include <Geode/utils/StringBuffer.hpp>
 #include <jasmine/hook.hpp>
 #include <jasmine/setting.hpp>
 
@@ -18,7 +19,7 @@ class $modify(MOIEditorUI, EditorUI) {
         auto transformHook = jasmine::hook::get(self.m_hooks, "EditorUI::transformObjectCall", dynamicObjectInfo);
         auto updateHook = jasmine::hook::get(self.m_hooks, "EditorUI::updateObjectInfoLabel", extraObjectInfo);
 
-        new EventListener([initHook, moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
+        SettingChangedEventV3().listen([initHook, moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
             auto settingName = setting->getKey();
             auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
             if (settingName == "extra-object-info") {
@@ -30,7 +31,7 @@ class $modify(MOIEditorUI, EditorUI) {
                 jasmine::hook::toggle(transformHook, value);
             }
             MoreObjectInfo::updateObjectInfoLabel();
-        }, SettingChangedFilterV3(GEODE_MOD_ID, std::nullopt));
+        }).leak();
     }
 
     bool init(LevelEditorLayer* lel) {
@@ -59,44 +60,44 @@ class $modify(MOIEditorUI, EditorUI) {
         auto selectedObject = m_selectedObject;
         if (!selectedObject) return;
 
-        fmt::memory_buffer objectInfo;
-        fmt::format_to(std::back_inserter(objectInfo), "{}", m_objectInfoLabel->getString());
+        StringBuffer objectInfo;
+        objectInfo.append(m_objectInfoLabel->getString());
 
         if (jasmine::setting::getValue<bool>("show-object-id")) {
-            fmt::format_to(std::back_inserter(objectInfo), "ID: {}\n", selectedObject->m_objectID);
+            objectInfo.append("ID: {}\n", selectedObject->m_objectID);
         }
 
         if (jasmine::setting::getValue<bool>("show-object-position")) {
-            auto& pos = selectedObject->m_obPosition;
-            fmt::format_to(std::back_inserter(objectInfo), "Position: ({}, {})\n", pos.x, pos.y - 90.0f);
+            auto pos = selectedObject->getPosition() - CCPoint { 0.0f, 90.0f };
+            objectInfo.append("Position: ({}, {})\n", pos.x, pos.y);
         }
 
         if (jasmine::setting::getValue<bool>("show-object-rotation")) {
-            auto rX = selectedObject->m_fRotationX;
-            auto rY = selectedObject->m_fRotationY;
+            auto rX = selectedObject->getRotationX();
+            auto rY = selectedObject->getRotationY();
             if (rX != 0.0f || rY != 0.0f) {
-                if (rX == rY) fmt::format_to(std::back_inserter(objectInfo), "Rotation: {}\n", rX);
-                else fmt::format_to(std::back_inserter(objectInfo), "Rotation: ({}, {})\n", rX, rY);
+                if (rX == rY) objectInfo.append("Rotation: {}\n", rX);
+                else objectInfo.append("Rotation: ({}, {})\n", rX, rY);
             }
         }
 
         if (jasmine::setting::getValue<bool>("show-object-scale")) {
-            auto sX = selectedObject->m_scaleX;
-            auto sY = selectedObject->m_scaleY;
+            auto sX = selectedObject->m_scaleX / selectedObject->m_pixelScaleX;
+            auto sY = selectedObject->m_scaleY / selectedObject->m_pixelScaleY;
             if (sX != 1.0f || sY != 1.0f) {
-                if (sX == sY) fmt::format_to(std::back_inserter(objectInfo), "Scale: {}\n", sX);
-                else fmt::format_to(std::back_inserter(objectInfo), "Scale: ({}, {})\n", sX, sY);
+                if (sX == sY) objectInfo.append("Scale: {}\n", sX);
+                else objectInfo.append("Scale: ({}, {})\n", sX, sY);
             }
         }
 
         if (jasmine::setting::getValue<bool>("show-object-size")) {
             auto& size = selectedObject->getObjectRect().size;
-            fmt::format_to(std::back_inserter(objectInfo), "Size: ({}, {})\n", size.width, size.height);
+            objectInfo.append("Size: ({}, {})\n", size.width, size.height);
         }
 
         if (jasmine::setting::getValue<bool>("show-object-radius")) {
             auto radius = selectedObject->m_objectRadius * std::max(selectedObject->m_scaleX, selectedObject->m_scaleY);
-            if (radius != 0.0f) fmt::format_to(std::back_inserter(objectInfo), "Radius: {}\n", radius);
+            if (radius != 0.0f) objectInfo.append("Radius: {}\n", radius);
         }
 
         auto base = selectedObject->m_baseColor;
@@ -105,8 +106,7 @@ class $modify(MOIEditorUI, EditorUI) {
         if (jasmine::setting::getValue<bool>("show-object-base-color") && base) {
             auto& [h, s, v, sa, va] = base->m_hsv;
             if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) {
-                fmt::format_to(
-                    std::back_inserter(objectInfo),
+                objectInfo.append(
                     "{}HSV: ({}, {}{}%, {}{}%)\n",
                     detail ? "Base " : "",
                     h,
@@ -121,8 +121,7 @@ class $modify(MOIEditorUI, EditorUI) {
         if (jasmine::setting::getValue<bool>("show-object-detail-color") && detail) {
             auto& [h, s, v, sa, va] = detail->m_hsv;
             if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) {
-                fmt::format_to(
-                    std::back_inserter(objectInfo),
+                objectInfo.append(
                     "{}HSV: ({}, {}{}%, {}{}%)\n",
                     base ? "Detail " : "",
                     h,
@@ -147,21 +146,21 @@ class $modify(MOIEditorUI, EditorUI) {
 
         if (jasmine::setting::getValue<bool>("show-object-type")) {
             auto type = (int)selectedObject->m_objectType;
-            fmt::format_to(std::back_inserter(objectInfo), "Type: {} ({})\n", type < types.size() ? types[type] : "Unknown", type);
+            objectInfo.append("Type: {} ({})\n", type < types.size() ? types[type] : "Unknown", type);
         }
 
         if (jasmine::setting::getValue<bool>("show-object-address")) {
-            fmt::format_to(std::back_inserter(objectInfo), "Address: 0x{:x}\n", reinterpret_cast<uintptr_t>(selectedObject));
+            objectInfo.append("Address: {}\n", static_cast<void*>(selectedObject));
         }
 
         if (jasmine::setting::getValue<bool>("show-object-data")) {
-            fmt::format_to(std::back_inserter(objectInfo), "Data: {}\n", std::string(selectedObject->getSaveString(m_editorLayer)));
+            objectInfo.append("Data: {}\n", std::string(selectedObject->getSaveString(m_editorLayer)));
         }
 
         if (jasmine::setting::getValue<bool>("show-object-time")) {
-            fmt::format_to(std::back_inserter(objectInfo), "Time: {}\n", m_editorLayer->timeForPos(selectedObject->m_obPosition, 0, 0, false, 0));
+            objectInfo.append("Time: {}\n", m_editorLayer->timeForPos(selectedObject->m_obPosition, 0, 0, false, 0));
         }
 
-        m_objectInfoLabel->setString(fmt::to_string(objectInfo).c_str());
+        m_objectInfoLabel->setString(objectInfo.c_str());
     }
 };

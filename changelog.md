@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.2.2 (2026-02-04)
+- Ported to Geometry Dash v2.208 / Geode SDK v5.0.0
+
 ## v1.2.1 (2025-10-09)
 - Fixed a bug where the "Extra Object Info" and "Dynamic Object Info" settings would not properly toggle functionality
 
