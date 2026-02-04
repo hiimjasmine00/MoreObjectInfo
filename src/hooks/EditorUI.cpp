@@ -154,7 +154,7 @@ class $modify(MOIEditorUI, EditorUI) {
         }
 
         if (jasmine::setting::getValue<bool>("show-object-data")) {
-            objectInfo.append("Data: {}\n", std::string(selectedObject->getSaveString(m_editorLayer)));
+            objectInfo.append("Data: {}\n", selectedObject->getSaveString(m_editorLayer));
         }
 
         if (jasmine::setting::getValue<bool>("show-object-time")) {

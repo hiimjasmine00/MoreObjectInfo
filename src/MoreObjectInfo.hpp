@@ -1,4 +1,3 @@
-class MoreObjectInfo {
-public:
-    static void updateObjectInfoLabel();
+namespace MoreObjectInfo {
+    void updateObjectInfoLabel();
 };
