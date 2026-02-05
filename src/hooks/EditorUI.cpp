@@ -20,6 +20,8 @@ class $modify(MOIEditorUI, EditorUI) {
         auto updateHook = jasmine::hook::get(self.m_hooks, "EditorUI::updateObjectInfoLabel", extraObjectInfo);
 
         SettingChangedEventV3().listen([initHook, moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
+            if (setting->getModID() != GEODE_MOD_ID) return;
+
             auto settingName = setting->getKey();
             auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
             if (settingName == "extra-object-info") {
