@@ -1,3 +1,3 @@
 namespace MoreObjectInfo {
     void updateObjectInfoLabel();
-};
+}
