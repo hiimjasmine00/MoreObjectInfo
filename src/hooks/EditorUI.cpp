@@ -19,16 +19,17 @@ class $modify(MOIEditorUI, EditorUI) {
         auto transformHook = jasmine::hook::get(self.m_hooks, "EditorUI::transformObjectCall", dynamicObjectInfo);
         auto updateHook = jasmine::hook::get(self.m_hooks, "EditorUI::updateObjectInfoLabel", extraObjectInfo);
 
-        SettingChangedEventV3().listen([initHook, moveHook, transformHook, updateHook](std::shared_ptr<SettingV3> setting) {
-            if (setting->getModID() != GEODE_MOD_ID) return;
+        SettingChangedEventV3().listen([
+            initHook, moveHook, transformHook, updateHook
+        ](std::string_view modID, std::string_view key, std::shared_ptr<SettingV3> setting) {
+            if (modID != GEODE_MOD_ID) return;
 
-            auto settingName = setting->getKey();
             auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
-            if (settingName == "extra-object-info") {
+            if (key == "extra-object-info") {
                 jasmine::hook::toggle(initHook, value);
                 jasmine::hook::toggle(updateHook, value);
             }
-            else if (settingName == "dynamic-object-info") {
+            else if (key == "dynamic-object-info") {
                 jasmine::hook::toggle(moveHook, value);
                 jasmine::hook::toggle(transformHook, value);
             }
