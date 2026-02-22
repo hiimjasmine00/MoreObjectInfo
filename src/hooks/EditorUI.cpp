@@ -71,25 +71,41 @@ class $modify(MOIEditorUI, EditorUI) {
         }
 
         if (jasmine::setting::getValue<bool>("show-object-position")) {
-            auto pos = selectedObject->getPosition() - CCPoint { 0.0f, 90.0f };
-            objectInfo.append("Position: ({}, {})\n", pos.x, pos.y);
+            auto position = selectedObject->getPosition() - CCPoint { 0.0f, 90.0f };
+            objectInfo.append("Position: ({}, {})\n", position.x, position.y);
         }
 
         if (jasmine::setting::getValue<bool>("show-object-rotation")) {
-            auto rX = selectedObject->getRotationX();
-            auto rY = selectedObject->getRotationY();
-            if (rX != 0.0f || rY != 0.0f) {
-                if (rX == rY) objectInfo.append("Rotation: {}\n", rX);
-                else objectInfo.append("Rotation: ({}, {})\n", rX, rY);
+            auto rotationX = selectedObject->getRotationX();
+            auto rotationY = selectedObject->getRotationY();
+            if (rotationX != 0.0f || rotationY != 0.0f) {
+                objectInfo.append("Rotation: ");
+                if (rotationX == rotationY) objectInfo.append("{}", rotationX);
+                else objectInfo.append("({}, {})", rotationX, rotationY);
+                objectInfo.append('\n');
             }
         }
 
         if (jasmine::setting::getValue<bool>("show-object-scale")) {
-            auto sX = selectedObject->m_scaleX / selectedObject->m_pixelScaleX;
-            auto sY = selectedObject->m_scaleY / selectedObject->m_pixelScaleY;
-            if (sX != 1.0f || sY != 1.0f) {
-                if (sX == sY) objectInfo.append("Scale: {}\n", sX);
-                else objectInfo.append("Scale: ({}, {})\n", sX, sY);
+            auto scaleX = selectedObject->m_scaleX / selectedObject->m_pixelScaleX;
+            auto scaleY = selectedObject->m_scaleY / selectedObject->m_pixelScaleY;
+            if (scaleX != 1.0f || scaleY != 1.0f) {
+                objectInfo.append("Scale: ");
+                if (scaleX == scaleY) objectInfo.append("{}", scaleX);
+                else objectInfo.append("({}, {})", scaleX, scaleY);
+                objectInfo.append('\n');
+            }
+        }
+
+        if (jasmine::setting::getValue<bool>("show-object-flip")) {
+            auto flipX = selectedObject->isFlipX();
+            auto flipY = selectedObject->isFlipY();
+            if (flipX || flipY) {
+                objectInfo.append("Flip: ");
+                if (flipX && flipY) objectInfo.append("X, Y");
+                else if (flipX) objectInfo.append('X');
+                else if (flipY) objectInfo.append('Y');
+                objectInfo.append('\n');
             }
         }
 
@@ -107,32 +123,38 @@ class $modify(MOIEditorUI, EditorUI) {
         auto detail = selectedObject->m_detailColor;
 
         if (jasmine::setting::getValue<bool>("show-object-base-color") && base) {
-            auto& [h, s, v, sa, va] = base->m_hsv;
-            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) {
-                objectInfo.append(
-                    "{}HSV: ({}, {}{}%, {}{}%)\n",
-                    detail ? "Base " : "",
-                    h,
-                    sa ? s >= 0.0f ? "+" : "" : "x",
-                    s * 100.0f,
-                    va ? v >= 0.0f ? "+" : "" : "x",
-                    v * 100.0f
-                );
+            auto& [h, s, v, sAdd, vAdd] = base->m_hsv;
+            if (h != 0.0f || s != 1.0f || v != 1.0f || sAdd || vAdd) {
+                if (detail) objectInfo.append("Base ");
+                objectInfo.append("HSV: ({}, ", h);
+                if (sAdd) {
+                    if (s >= 0.0f) objectInfo.append('+');
+                }
+                else objectInfo.append('x');
+                objectInfo.append("{}%, ", s * 100.0f);
+                if (vAdd) {
+                    if (v >= 0.0f) objectInfo.append('+');
+                }
+                else objectInfo.append('x');
+                objectInfo.append("{}%)\n", v * 100.0f);
             }
         }
 
         if (jasmine::setting::getValue<bool>("show-object-detail-color") && detail) {
-            auto& [h, s, v, sa, va] = detail->m_hsv;
-            if (h != 0.0f || s != 1.0f || v != 1.0f || sa || va) {
-                objectInfo.append(
-                    "{}HSV: ({}, {}{}%, {}{}%)\n",
-                    base ? "Detail " : "",
-                    h,
-                    sa ? s >= 0.0f ? "+" : "" : "x",
-                    s * 100.0f,
-                    va ? v >= 0.0f ? "+" : "" : "x",
-                    v * 100.0f
-                );
+            auto& [h, s, v, sAdd, vAdd] = detail->m_hsv;
+            if (h != 0.0f || s != 1.0f || v != 1.0f || sAdd || vAdd) {
+                if (base) objectInfo.append("Detail ");
+                objectInfo.append("HSV: ({}, ", h);
+                if (sAdd) {
+                    if (s >= 0.0f) objectInfo.append('+');
+                }
+                else objectInfo.append('x');
+                objectInfo.append("{}%, ", s * 100.0f);
+                if (vAdd) {
+                    if (v >= 0.0f) objectInfo.append('+');
+                }
+                else objectInfo.append('x');
+                objectInfo.append("{}%)\n", v * 100.0f);
             }
         }
 

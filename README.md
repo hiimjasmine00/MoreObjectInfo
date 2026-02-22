@@ -10,6 +10,7 @@ Object info, but better.
 - Position (X, Y)
 - Rotation (X, Y)
 - Scale (X, Y)
+- Flip (X, Y)
 - Size (Width, Height)
 - Radius
 - Base Color HSV

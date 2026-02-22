@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.2.3 (2026-02-22)
+- Added Object Flip (Suggested by [Doranell](user:14179470))
+
 ## v1.2.2 (2026-02-14)
 - Ported to Geometry Dash v2.208 / Geode SDK v5.0.0
 

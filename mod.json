@@ -1,12 +1,12 @@
 {
-    "geode": "5.0.0-beta.1",
+    "geode": "5.0.0-beta.4",
     "gd": {
         "win": "2.2081",
         "mac": "2.2081",
         "android": "2.2081",
         "ios": "2.2081"
     },
-    "version": "v1.2.2",
+    "version": "v1.2.3",
     "id": "hiimjustin000.more_object_info",
     "name": "More Object Info",
     "developer": "hiimjasmine00",
@@ -58,6 +58,13 @@
         "show-object-scale": {
             "name": "Scale",
             "description": "Whether to show the object's scale.",
+            "type": "bool",
+            "enable-if": "extra-object-info",
+            "default": true
+        },
+        "show-object-flip": {
+            "name": "Flip",
+            "description": "Whether to show the object's flip.",
             "type": "bool",
             "enable-if": "extra-object-info",
             "default": true
