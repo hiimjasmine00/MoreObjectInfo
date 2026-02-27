@@ -12,28 +12,27 @@ using namespace geode::prelude;
 class $modify(MOIEditorUI, EditorUI) {
     static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
         auto dynamicObjectInfo = jasmine::setting::getValue<bool>("dynamic-object-info");
-        auto extraObjectInfo = jasmine::setting::getValue<bool>("extra-object-info");
-
-        auto initHook = jasmine::hook::get(self.m_hooks, "EditorUI::init", extraObjectInfo);
         auto moveHook = jasmine::hook::get(self.m_hooks, "EditorUI::moveObjectCall", dynamicObjectInfo);
         auto transformHook = jasmine::hook::get(self.m_hooks, "EditorUI::transformObjectCall", dynamicObjectInfo);
+
+        SettingChangedEventV3(GEODE_MOD_ID, "dynamic-object-info").listen([moveHook, transformHook](std::shared_ptr<SettingV3> setting) {
+            auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
+            jasmine::hook::toggle(moveHook, value);
+            jasmine::hook::toggle(transformHook, value);
+        }).leak();
+
+        auto extraObjectInfo = jasmine::setting::getValue<bool>("extra-object-info");
+        auto initHook = jasmine::hook::get(self.m_hooks, "EditorUI::init", extraObjectInfo);
         auto updateHook = jasmine::hook::get(self.m_hooks, "EditorUI::updateObjectInfoLabel", extraObjectInfo);
 
-        SettingChangedEventV3().listen([
-            initHook, moveHook, transformHook, updateHook
-        ](std::string_view modID, std::string_view key, std::shared_ptr<SettingV3> setting) {
-            if (modID != GEODE_MOD_ID) return;
-
+        SettingChangedEventV3(GEODE_MOD_ID, "extra-object-info").listen([initHook, updateHook](std::shared_ptr<SettingV3> setting) {
             auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
-            if (key == "extra-object-info") {
-                jasmine::hook::toggle(initHook, value);
-                jasmine::hook::toggle(updateHook, value);
-            }
-            else if (key == "dynamic-object-info") {
-                jasmine::hook::toggle(moveHook, value);
-                jasmine::hook::toggle(transformHook, value);
-            }
-            MoreObjectInfo::updateObjectInfoLabel();
+            jasmine::hook::toggle(initHook, value);
+            jasmine::hook::toggle(updateHook, value);
+        }).leak();
+
+        SettingChangedEventV3().listen([](std::string_view modID, std::string_view key, std::shared_ptr<SettingV3> setting) {
+            if (modID == GEODE_MOD_ID) MoreObjectInfo::updateObjectInfoLabel();
         }).leak();
     }
 

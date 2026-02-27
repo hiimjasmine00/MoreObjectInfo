@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.2.4 (2026-02-27)
+- Fixed setting change events
+
 ## v1.2.3 (2026-02-22)
 - Added Object Flip (Suggested by [Doranell](user:14179470))
 
