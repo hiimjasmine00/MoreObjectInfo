@@ -35,10 +35,6 @@ class $modify(MOIEditorUI, EditorUI) {
             jasmine::hook::toggle(initHook, value);
             jasmine::hook::toggle(updateHook, value);
         }).leak();
-
-        SettingChangedEventV3().listen([](std::string_view modID, std::string_view key, std::shared_ptr<SettingV3> setting) {
-            if (modID == GEODE_MOD_ID) MoreObjectInfo::updateObjectInfoLabel();
-        }).leak();
     }
 
     bool init(LevelEditorLayer* lel) {
@@ -52,6 +48,10 @@ class $modify(MOIEditorUI, EditorUI) {
             if (index == std::string::npos) index = name.find_last_of('\\');
             sheetNames.emplace(texture, std::move(name).substr(index + 1));
         }
+
+        addEventListener(SettingChangedEventV3(), [this](std::string_view modID, std::string_view key, std::shared_ptr<SettingV3> setting) {
+            if (modID == GEODE_MOD_ID) EditorUI::updateObjectInfoLabel();
+        });
 
         return true;
     }
