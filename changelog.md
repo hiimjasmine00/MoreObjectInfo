@@ -1,4 +1,8 @@
 # More Object Info Changelog
+## v1.2.5 (2026-03-03)
+- Added Object Parent Mode
+- Added Object Sprite Frame and Sprite Sheet (Suggested by [StarryDawn72](user:21431467))
+
 ## v1.2.4 (2026-02-27)
 - Fixed setting change events
 

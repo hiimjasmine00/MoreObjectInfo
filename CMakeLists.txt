@@ -9,7 +9,7 @@ endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(GEODE_DISABLE_PRECOMPILED_HEADERS ON)
 
-project(MoreObjectInfo VERSION 1.2.4)
+project(MoreObjectInfo VERSION 1.2.5)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 

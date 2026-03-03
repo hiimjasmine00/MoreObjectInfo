@@ -2,6 +2,7 @@
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
+#include <Geode/binding/ObjectToolbox.hpp>
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/utils/StringBuffer.hpp>
 #include <jasmine/hook.hpp>
@@ -10,6 +11,10 @@
 using namespace geode::prelude;
 
 class $modify(MOIEditorUI, EditorUI) {
+    struct Fields {
+        std::unordered_map<CCTexture2D*, std::string> m_sheetNames;
+    };
+
     static void onModify(ModifyBase<ModifyDerive<MOIEditorUI, EditorUI>>& self) {
         auto dynamicObjectInfo = jasmine::setting::getValue<bool>("dynamic-object-info");
         auto moveHook = jasmine::hook::get(self.m_hooks, "EditorUI::moveObjectCall", dynamicObjectInfo);
@@ -40,6 +45,13 @@ class $modify(MOIEditorUI, EditorUI) {
         if (!EditorUI::init(lel)) return false;
 
         m_objectInfoLabel->setPositionX(82.0f);
+
+        auto& sheetNames = m_fields->m_sheetNames;
+        for (auto [name, texture] : CCTextureCache::get()->m_pTextures->asExt<std::string, CCTexture2D*>()) {
+            auto index = name.find_last_of('/');
+            if (index == std::string::npos) index = name.find_last_of('\\');
+            sheetNames.emplace(texture, std::move(name).substr(index + 1));
+        }
 
         return true;
     }
@@ -121,7 +133,7 @@ class $modify(MOIEditorUI, EditorUI) {
         auto base = selectedObject->m_baseColor;
         auto detail = selectedObject->m_detailColor;
 
-        if (jasmine::setting::getValue<bool>("show-object-base-color") && base) {
+        if (base && jasmine::setting::getValue<bool>("show-object-base-color")) {
             auto& [h, s, v, sAdd, vAdd] = base->m_hsv;
             if (h != 0.0f || s != 1.0f || v != 1.0f || sAdd || vAdd) {
                 if (detail) objectInfo.append("Base ");
@@ -139,7 +151,7 @@ class $modify(MOIEditorUI, EditorUI) {
             }
         }
 
-        if (jasmine::setting::getValue<bool>("show-object-detail-color") && detail) {
+        if (detail && jasmine::setting::getValue<bool>("show-object-detail-color")) {
             auto& [h, s, v, sAdd, vAdd] = detail->m_hsv;
             if (h != 0.0f || s != 1.0f || v != 1.0f || sAdd || vAdd) {
                 if (base) objectInfo.append("Detail ");
@@ -182,7 +194,25 @@ class $modify(MOIEditorUI, EditorUI) {
         }
 
         if (jasmine::setting::getValue<bool>("show-object-time")) {
-            objectInfo.append("Time: {}\n", m_editorLayer->timeForPos(selectedObject->m_obPosition, 0, 0, false, 0));
+            objectInfo.append("Time: {}\n", m_editorLayer->timeForPos(selectedObject->getPosition(), 0, 0, false, 0));
+        }
+
+        if (jasmine::setting::getValue<bool>("show-object-parent-mode")) {
+            objectInfo.append("Parent Mode: {}\n", selectedObject->getParentMode());
+        }
+
+        auto frameName = ObjectToolbox::sharedState()->intKeyToFrame(selectedObject->m_objectID);
+
+        if (jasmine::setting::getValue<bool>("show-object-sprite-frame")) {
+            objectInfo.append("Sprite Frame: {}\n", frameName);
+        }
+
+        if (jasmine::setting::getValue<bool>("show-object-sprite-sheet")) {
+            auto frame = CCSpriteFrameCache::get()->spriteFrameByName(frameName);
+            auto texture = frame ? frame->getTexture() : nullptr;
+            auto& sheetNames = m_fields->m_sheetNames;
+            auto it = sheetNames.find(texture);
+            objectInfo.append("Sprite Sheet: {}\n", it != sheetNames.end() ? it->second : "Unknown");
         }
 
         m_objectInfoLabel->setString(objectInfo.c_str());
