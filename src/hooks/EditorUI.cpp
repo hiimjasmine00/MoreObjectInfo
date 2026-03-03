@@ -1,4 +1,3 @@
-#include "../MoreObjectInfo.hpp"
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/GJSpriteColor.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
