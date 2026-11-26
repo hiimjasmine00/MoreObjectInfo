@@ -2,6 +2,7 @@
 #include <Geode/binding/GJSpriteColor.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
 #include <Geode/binding/ObjectToolbox.hpp>
+#include <Geode/cocos/textures/CCTextureCache.h>
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/utils/StringBuffer.hpp>
 #include <jasmine/hook.hpp>

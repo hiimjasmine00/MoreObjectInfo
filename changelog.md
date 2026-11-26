@@ -1,4 +1,7 @@
 # More Object Info Changelog
+## v1.2.6 (2026-11-26)
+- Ported to Geometry Dash v2.209 / Geode SDK v6.0.0
+
 ## v1.2.5 (2026-03-03)
 - Added Object Parent Mode
 - Added Object Sprite Frame and Sprite Sheet (Suggested by [StarryDawn72](user:21431467))
